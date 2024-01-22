@@ -14,9 +14,9 @@ impl Default for PlayerState {
 }
 
 impl PlayerState {
-    fn dead(&mut self) {
-        self.alive = false;
-    }
+    //fn dead(&mut self) {
+    //    self.alive = false;
+    //}
     fn spawned(&mut self) {
         self.alive = true;
     }

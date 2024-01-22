@@ -1,6 +1,7 @@
 use bevy::{input::mouse::MouseWheel, prelude::*, window::PrimaryWindow};
 
 use components::{Movable, Velocity};
+use enemy::EnemyPlugin;
 use player::PlayerPlugin;
 use resources::{GameState, GameTextures, PlayerState, WinSize};
 
@@ -8,6 +9,7 @@ mod components;
 mod resources;
 
 mod player;
+mod enemy;
 
 const SPRITE_SCALE: f32 = 0.5;
 const TIME_STEP: f32 = 1. / 60.;
@@ -16,6 +18,7 @@ const PLAYER_SPRITE: &str = "player_a_01.png";
 //const PLAYER_SIZE: (f32, f32) = (144., 75.0);
 const RESOLUTION: (f32, f32) = (2560., 1440.);
 const ENEMY_SPRITE: &str = "enemy_a_01.png";
+const ENEMY_SPEED: f32 = 0.65;
 
 fn zoom_system(game_state: ResMut<GameState>, mut query: Query<&mut Transform, With<Sprite>>) {
     for mut transform in query.iter_mut() {
@@ -59,6 +62,7 @@ fn setup_system(
 
     let game_texture = GameTextures {
         player: asset_server.load(PLAYER_SPRITE),
+        enemy: asset_server.load(ENEMY_SPRITE),
     };
     commands.insert_resource(game_texture);
 
@@ -97,6 +101,7 @@ fn main() {
             ..default()
         }))
         .add_plugins(PlayerPlugin)
+        .add_plugins(EnemyPlugin)
         .add_systems(Startup, setup_system)
         .add_systems(
             Update,

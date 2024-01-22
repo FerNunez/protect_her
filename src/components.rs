@@ -4,6 +4,9 @@ use bevy::prelude::Component;
 pub struct Player;
 
 #[derive(Component)]
+pub struct Enemy;
+
+#[derive(Component)]
 pub struct Velocity {
     pub x: f32,
     pub y: f32,
