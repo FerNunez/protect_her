@@ -1,11 +1,13 @@
 use std::time::Duration;
 
-use bevy::{prelude::*, time::common_conditions::on_timer,};
+use bevy::math::Vec2;
+use bevy::window::PrimaryWindow;
+use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{Movable, Velocity, Player};
+use crate::components::{FromPlayer, Laser, Movable, Player, SpriteSize, Velocity};
 
-use crate::SPRITE_SCALE;
-use crate::resources::{PlayerState,GameTextures, };
+use crate::resources::{GameTextures, PlayerState, WinSize};
+use crate::{PLAYER_LASER_SIZE, SPRITE_SCALE};
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -31,6 +33,7 @@ impl Plugin for PlayerPlugin {
             (
                 player_spawn_system.run_if(on_timer(Duration::from_secs_f64(0.1))),
                 player_keyboard_event_system,
+                player_fire_system,
             ),
         );
     }
@@ -79,5 +82,66 @@ fn player_keyboard_event_system(
         } else {
             0.
         };
+    }
+}
+
+fn player_fire_system(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    win_size: Res<WinSize>,
+    kboard: Res<Input<KeyCode>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    query: Query<&Transform, With<Player>>,
+) {
+    if let Ok(player_tf) = query.get_single() {
+        let player_position = Vec2::new(player_tf.translation.x, player_tf.translation.y);
+        let mouse_position = window_query.single().cursor_position();
+
+        let (velocity, angle) = match mouse_position {
+            Some(mouse_position) => {
+
+                // here remeber that position of player Y is positive going down
+                let direction_vector = Vec2::new(
+                    mouse_position.x - win_size.w / 2. - player_position.x,
+                    mouse_position.y - win_size.h / 2. + player_position.y,
+                );
+
+                let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 });
+
+                (
+                    Velocity {
+                        x: direction_vector.x / direction_vector.length(),
+                        y: -direction_vector.y / direction_vector.length(),
+                    },
+                    angle,
+                )
+            }
+            None => (Velocity { x: 0., y: 0. }, 0.0),
+        };
+
+        // with key
+        if kboard.just_pressed(KeyCode::Space) {
+            // probably set here a OPP? single call
+            commands
+                .spawn(SpriteBundle {
+                    texture: game_textures.player_laser.clone(),
+                    // TODO: player_y as a part of the SPRITE?
+                    transform: Transform::from_xyz(player_position.x, player_position.y, 0.)
+                        .with_scale(Vec3 {
+                            x: SPRITE_SCALE,
+                            y: SPRITE_SCALE,
+                            z: 1.,
+                        })
+                        .with_rotation(Quat::from_rotation_z(angle)),
+                    ..Default::default()
+                })
+                .insert(Movable)
+                .insert(velocity)
+                .insert(FromPlayer)
+                .insert(Laser)
+                .insert(SpriteSize::from(PLAYER_LASER_SIZE));
+        }
+        // without key
+        // spawn all other skins
     }
 }

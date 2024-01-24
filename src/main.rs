@@ -8,8 +8,8 @@ use resources::{GameState, GameTextures, PlayerState, WinSize};
 mod components;
 mod resources;
 
-mod player;
 mod enemy;
+mod player;
 
 const SPRITE_SCALE: f32 = 0.5;
 const TIME_STEP: f32 = 1. / 60.;
@@ -19,6 +19,9 @@ const PLAYER_SPRITE: &str = "player_a_01.png";
 const RESOLUTION: (f32, f32) = (2560., 1440.);
 const ENEMY_SPRITE: &str = "enemy_a_01.png";
 const ENEMY_SPEED: f32 = 0.65;
+
+const PLAYER_LASER_SPRITE: &str = "laser_b_01.png";
+const PLAYER_LASER_SIZE: (f32, f32) = (17., 55.);
 
 fn zoom_system(game_state: ResMut<GameState>, mut query: Query<&mut Transform, With<Sprite>>) {
     for mut transform in query.iter_mut() {
@@ -63,6 +66,7 @@ fn setup_system(
     let game_texture = GameTextures {
         player: asset_server.load(PLAYER_SPRITE),
         enemy: asset_server.load(ENEMY_SPRITE),
+        player_laser: asset_server.load(PLAYER_LASER_SPRITE),
     };
     commands.insert_resource(game_texture);
 
@@ -82,6 +86,7 @@ fn movable_system(
         translation.y += velocity.y * TIME_STEP * BASE_SPEED * game_state.zoom;
     }
 }
+
 
 fn main() {
     App::new()

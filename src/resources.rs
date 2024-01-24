@@ -16,6 +16,7 @@ pub struct GameState {
 pub struct GameTextures {
     pub player: Handle<Image>,
     pub enemy: Handle<Image>,
+    pub player_laser: Handle<Image>,
 }
 
 #[derive(Resource)]
