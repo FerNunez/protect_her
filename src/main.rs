@@ -1,15 +1,22 @@
-use bevy::{input::mouse::MouseWheel, prelude::*, window::PrimaryWindow};
+use bevy::{
+    input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*, sprite::collide_aabb::collide,
+    utils::HashSet, window::PrimaryWindow,
+};
 
-use components::{Movable, Velocity};
+use components::{Enemy, FromPlayer, Health, Laser, Movable, SpriteSize, Velocity};
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
-use resources::{GameState, GameTextures, PlayerState, WinSize};
+use resources::{EnemyCount, GameState, GameTextures, PlayerState, WinSize};
+
+use crate::components::BeingHitted;
 
 mod components;
 mod resources;
 
 mod enemy;
 mod player;
+
+const NUM_ENEMIES_MAX: u32 = 1000;
 
 const SPRITE_SCALE: f32 = 0.5;
 const TIME_STEP: f32 = 1. / 60.;
@@ -18,10 +25,14 @@ const PLAYER_SPRITE: &str = "player_a_01.png";
 //const PLAYER_SIZE: (f32, f32) = (144., 75.0);
 const RESOLUTION: (f32, f32) = (2560., 1440.);
 const ENEMY_SPRITE: &str = "enemy_a_01.png";
-const ENEMY_SPEED: f32 = 0.65;
+const ENEMY_SPEED: f32 = 0.22;
+const ENEMY_SIZE: (f32, f32) = (144., 75.0);
 
 const PLAYER_LASER_SPRITE: &str = "laser_b_01.png";
 const PLAYER_LASER_SIZE: (f32, f32) = (17., 55.);
+const PLAYER_LASER_SPEED: f32 = 1.8;
+
+const FRAMES_HITTED: u16 = 10;
 
 fn zoom_system(game_state: ResMut<GameState>, mut query: Query<&mut Transform, With<Sprite>>) {
     for mut transform in query.iter_mut() {
@@ -74,6 +85,8 @@ fn setup_system(
 
     let game_state = GameState { zoom: 0.5 };
     commands.insert_resource(game_state);
+
+    commands.insert_resource(EnemyCount { alive: 0, dead: 0 });
 }
 
 fn movable_system(
@@ -87,6 +100,80 @@ fn movable_system(
     }
 }
 
+fn player_laser_hit_enemy_system(
+    mut commands: Commands,
+    mut enemy_count: ResMut<EnemyCount>,
+    laser_query: Query<(Entity, &Transform, &SpriteSize), (With<Laser>, With<FromPlayer>)>,
+    mut enemy_query: Query<(Entity, &Transform, &SpriteSize, &mut Health), With<Enemy>>,
+) {
+    let mut despawned_entities: HashSet<Entity> = HashSet::new();
+
+    for (laser_entity, laser_tf, laser_size) in laser_query.iter() {
+        //println!("Test2");
+        if despawned_entities.contains(&laser_entity) {
+            continue;
+        }
+
+        let laser_scale = Vec2::from(laser_tf.scale.xy());
+
+        for (enemy_entity, enemy_tf, enemy_size, mut health) in enemy_query.iter_mut() {
+            if despawned_entities.contains(&enemy_entity)
+                || despawned_entities.contains(&laser_entity)
+            {
+                continue;
+            }
+
+            let enemy_scale = Vec2::from(enemy_tf.scale.xy());
+
+            // Collision
+            let collision = collide(
+                laser_tf.translation,
+                laser_size.0 * laser_scale,
+                enemy_tf.translation,
+                enemy_size.0 * enemy_scale,
+            );
+
+            // perform collision
+            if let Some(_) = collision {
+                commands.entity(laser_entity).despawn();
+                despawned_entities.insert(laser_entity);
+
+                health.0 -= 1;
+
+                // spawn Explosion at enemy tf
+                commands.entity(enemy_entity).insert(BeingHitted(0));
+
+                if health.0 == 0 {
+                    enemy_count.alive -= 1;
+                    enemy_count.dead += 1;
+
+                    commands.entity(enemy_entity).despawn();
+                    despawned_entities.insert(enemy_entity);
+
+                    //commands.spawn(ExplotionHere);
+                    // spawn coin!
+                }
+
+                // command action to change color of image
+            }
+        }
+    }
+}
+
+fn animate_being_hitted(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut BeingHitted, &mut Sprite)>,
+) {
+    for (entity, mut frame_hitted, mut sprite) in query.iter_mut() {
+        frame_hitted.0 += 1;
+        sprite.color.set_a(0.2);
+
+        if frame_hitted.0 >= FRAMES_HITTED {
+            commands.entity(entity).remove::<BeingHitted>();
+            sprite.color.set_a(1.);
+        }
+    }
+}
 
 fn main() {
     App::new()
@@ -114,6 +201,8 @@ fn main() {
                 zoom_system,
                 movable_system,
                 user_mouse_handler_zoom_event_system,
+                player_laser_hit_enemy_system,
+                animate_being_hitted,
             ),
         )
         .run();

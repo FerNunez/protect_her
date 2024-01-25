@@ -29,3 +29,9 @@ impl From<(f32, f32)> for SpriteSize {
         SpriteSize(Vec2::new(val.0, val.1))
     }
 }
+
+#[derive(Component)]
+pub struct Health(pub u16);
+
+#[derive(Component)]
+pub struct BeingHitted(pub u16);

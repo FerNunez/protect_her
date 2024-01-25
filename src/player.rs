@@ -7,7 +7,7 @@ use bevy::{prelude::*, time::common_conditions::on_timer};
 use crate::components::{FromPlayer, Laser, Movable, Player, SpriteSize, Velocity};
 
 use crate::resources::{GameTextures, PlayerState, WinSize};
-use crate::{PLAYER_LASER_SIZE, SPRITE_SCALE};
+use crate::{PLAYER_LASER_SIZE, SPRITE_SCALE, PLAYER_LASER_SPEED};
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -99,7 +99,6 @@ fn player_fire_system(
 
         let (velocity, angle) = match mouse_position {
             Some(mouse_position) => {
-
                 // here remeber that position of player Y is positive going down
                 let direction_vector = Vec2::new(
                     mouse_position.x - win_size.w / 2. - player_position.x,
@@ -110,8 +109,8 @@ fn player_fire_system(
 
                 (
                     Velocity {
-                        x: direction_vector.x / direction_vector.length(),
-                        y: -direction_vector.y / direction_vector.length(),
+                        x: (direction_vector.x / direction_vector.length()) * PLAYER_LASER_SPEED,
+                        y: -direction_vector.y / direction_vector.length() * PLAYER_LASER_SPEED,
                     },
                     angle,
                 )

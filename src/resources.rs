@@ -23,3 +23,9 @@ pub struct GameTextures {
 pub struct PlayerState {
     pub alive: bool,
 }
+
+#[derive(Resource)]
+pub struct EnemyCount { 
+    pub alive: u32, 
+    pub dead: u32 ,
+}

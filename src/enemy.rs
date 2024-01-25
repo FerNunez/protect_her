@@ -3,11 +3,11 @@ use std::time::Duration;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{Enemy, Movable, Player, Velocity};
+use crate::components::{Enemy, Health, Movable, Player, SpriteSize, Velocity};
 
-use crate::resources::{GameTextures, PlayerState, WinSize};
-use crate::ENEMY_SPEED;
-use crate::SPRITE_SCALE;
+use crate::resources::{EnemyCount, GameTextures, PlayerState, WinSize};
+use crate::{ENEMY_SIZE, SPRITE_SCALE};
+use crate::{ENEMY_SPEED, NUM_ENEMIES_MAX};
 
 pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
@@ -26,29 +26,36 @@ fn enemy_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     win_size: Res<WinSize>,
+    mut enemy_count: ResMut<EnemyCount>,
 ) {
-    let mut rng = thread_rng();
+    if enemy_count.alive < NUM_ENEMIES_MAX {
+        let mut rng = thread_rng();
 
-    //// compoute the start x/y
-    let w_span = win_size.w / 2.;
-    let h_span = win_size.h / 2.;
-    //let x = if rng.gen_bool(0.5) { w_span } else { -w_span };
-    let x = rng.gen_range(-w_span..w_span) as f32;
-    let y = rng.gen_range(-h_span..h_span) as f32;
+        //// compoute the start x/y
+        let w_span = win_size.w / 2.;
+        let h_span = win_size.h / 2.;
+        //let x = if rng.gen_bool(0.5) { w_span } else { -w_span };
+        let x = rng.gen_range(-w_span..w_span) as f32;
+        let y = rng.gen_range(-h_span..h_span) as f32;
 
-    commands
-        .spawn(SpriteBundle {
-            texture: game_textures.enemy.clone(),
-            transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(
-                SPRITE_SCALE,
-                SPRITE_SCALE,
-                1.0,
-            )),
-            ..Default::default()
-        })
-        .insert(Enemy)
-        .insert(Movable)
-        .insert(Velocity { x: 0., y: 0. });
+        commands
+            .spawn(SpriteBundle {
+                texture: game_textures.enemy.clone(),
+                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(
+                    SPRITE_SCALE,
+                    SPRITE_SCALE,
+                    1.0,
+                )),
+                ..Default::default()
+            })
+            .insert(Enemy)
+            .insert(Movable)
+            .insert(Velocity { x: 0., y: 0. })
+            .insert(SpriteSize::from(ENEMY_SIZE))
+            .insert(Health(10));
+
+        enemy_count.alive += 1;
+    }
 }
 
 fn enemy_target_player(
@@ -62,8 +69,8 @@ fn enemy_target_player(
                 enemy_velocity.x = player_transform.translation.x - enemy_transform.translation.x;
                 enemy_velocity.y = player_transform.translation.y - enemy_transform.translation.y;
                 let speed = bevy::prelude::Vec2::from((enemy_velocity.x, enemy_velocity.y));
-                enemy_velocity.x *= ENEMY_SPEED / speed.length();
-                enemy_velocity.y *= ENEMY_SPEED / speed.length();
+                enemy_velocity.x *= (ENEMY_SPEED / speed.length()) * 0.35;
+                enemy_velocity.y *= ENEMY_SPEED / speed.length() * 0.35;
             }
         }
     }
