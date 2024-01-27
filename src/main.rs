@@ -265,7 +265,6 @@ fn player_pickup_coin_system(
     }
 }
 
-
 //fn show_coins_system(
 //    game_state: Res<GameState>,
 //) {

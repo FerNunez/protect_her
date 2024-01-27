@@ -3,10 +3,10 @@ use std::time::Duration;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{Enemy, Health, Movable, Player, SpriteSize, Velocity, SpriteScale};
+use crate::components::{Enemy, Health, Movable, Player, SpriteScale, SpriteSize, Velocity};
 
-use crate::resources::{EnemyCount, GameTextures, PlayerState, WinSize, GameState};
-use crate::{ENEMY_SIZE, ENEMY_HEALTH, BASE_SPRITE_SCALE};
+use crate::resources::{EnemyCount, GameState, GameTextures, PlayerState, WinSize};
+use crate::{BASE_SPRITE_SCALE, ENEMY_HEALTH, ENEMY_SIZE};
 use crate::{ENEMY_SPEED, NUM_ENEMIES_MAX};
 
 pub struct EnemyPlugin;
@@ -42,7 +42,11 @@ fn enemy_spawn_system(
         commands
             .spawn(SpriteBundle {
                 texture: game_textures.enemy.clone(),
-                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(BASE_SPRITE_SCALE.0 * game_state.zoom, BASE_SPRITE_SCALE.1 * game_state.zoom, 0.)),
+                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(
+                    BASE_SPRITE_SCALE.0 * game_state.zoom,
+                    BASE_SPRITE_SCALE.1 * game_state.zoom,
+                    0.,
+                )),
                 ..Default::default()
             })
             .insert(Enemy)
