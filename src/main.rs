@@ -1,9 +1,11 @@
 use bevy::{
-    input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*, sprite::collide_aabb::collide,
+    input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*, sprite::{collide_aabb::collide,},
     utils::HashSet, window::PrimaryWindow,
 };
 
-use components::{Enemy, FromPlayer, Health, Laser, Movable, SpriteSize, Velocity};
+use components::{
+    Coin, Enemy, FromPlayer, Health, Laser, Movable, SpawnCoin, SpriteSize, Velocity, SpriteScale,
+};
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
 use resources::{EnemyCount, GameState, GameTextures, PlayerState, WinSize};
@@ -18,7 +20,7 @@ mod player;
 
 const NUM_ENEMIES_MAX: u32 = 1000;
 
-const SPRITE_SCALE: f32 = 0.5;
+const BASE_SPRITE_SCALE: (f32,f32) = (0.5, 0.5);
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 const PLAYER_SPRITE: &str = "player_a_01.png";
@@ -27,18 +29,24 @@ const RESOLUTION: (f32, f32) = (2560., 1440.);
 const ENEMY_SPRITE: &str = "enemy_a_01.png";
 const ENEMY_SPEED: f32 = 0.22;
 const ENEMY_SIZE: (f32, f32) = (144., 75.0);
+const ENEMY_HEALTH: f32 = 3.;
 
 const PLAYER_LASER_SPRITE: &str = "laser_b_01.png";
 const PLAYER_LASER_SIZE: (f32, f32) = (17., 55.);
 const PLAYER_LASER_SPEED: f32 = 1.8;
+const PLAYER_DAMAGE: f32 = 1.;
 
 const FRAMES_HITTED: u16 = 10;
 
-fn zoom_system(game_state: ResMut<GameState>, mut query: Query<&mut Transform, With<Sprite>>) {
-    for mut transform in query.iter_mut() {
+const COIN_SPRITE: &str = "watermelon.png";
+const COIN_SIZE: (f32, f32) = (16., 16.);
+const COIN_SCALE: (f32, f32) = (1.8, 1.8);
+
+fn zoom_system(game_state: ResMut<GameState>, mut query: Query<(&mut Transform, &SpriteScale), With<Sprite>>) {
+    for (mut transform, sprite_scale) in query.iter_mut() {
         let scale = &mut transform.scale;
-        scale.x = game_state.zoom * SPRITE_SCALE;
-        scale.y = game_state.zoom * SPRITE_SCALE;
+        scale.x = game_state.zoom * sprite_scale.0.x;
+        scale.y = game_state.zoom * sprite_scale.0.y;
     }
 }
 
@@ -78,6 +86,7 @@ fn setup_system(
         player: asset_server.load(PLAYER_SPRITE),
         enemy: asset_server.load(ENEMY_SPRITE),
         player_laser: asset_server.load(PLAYER_LASER_SPRITE),
+        coin: asset_server.load(COIN_SPRITE),
     };
     commands.insert_resource(game_texture);
 
@@ -138,12 +147,12 @@ fn player_laser_hit_enemy_system(
                 commands.entity(laser_entity).despawn();
                 despawned_entities.insert(laser_entity);
 
-                health.0 -= 1;
+                health.0 -= PLAYER_DAMAGE;
 
                 // spawn Explosion at enemy tf
                 commands.entity(enemy_entity).insert(BeingHitted(0));
 
-                if health.0 == 0 {
+                if health.0 <= 0.0 {
                     enemy_count.alive -= 1;
                     enemy_count.dead += 1;
 
@@ -151,7 +160,7 @@ fn player_laser_hit_enemy_system(
                     despawned_entities.insert(enemy_entity);
 
                     //commands.spawn(ExplotionHere);
-                    // spawn coin!
+                    commands.spawn(SpawnCoin( Vec2::new(enemy_tf.translation.x, enemy_tf.translation.y)));
                 }
 
                 // command action to change color of image
@@ -172,6 +181,33 @@ fn animate_being_hitted(
             commands.entity(entity).remove::<BeingHitted>();
             sprite.color.set_a(1.);
         }
+    }
+}
+
+fn spawn_coin_system(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    game_state: Res<GameState>,
+    query: Query<(Entity, &SpawnCoin)>,
+) {
+    for (entity, spawn_coin) in query.iter() {
+        let x = spawn_coin.0.x;
+        let y = spawn_coin.0.y;
+
+        let sprite_size = (COIN_SCALE.0 * COIN_SIZE.0, COIN_SCALE.1 * COIN_SIZE.1);
+        let sprite_scale = (COIN_SCALE.0 * game_state.zoom,  COIN_SCALE.1 *  game_state.zoom);
+        commands
+            .spawn(SpriteBundle {
+                texture: game_textures.coin.clone(),
+                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(sprite_scale.0, sprite_scale.1, 0.)),
+                ..Default::default()
+            })
+            .insert(SpriteSize::from(sprite_size))
+            // TODO: fix this. create muiltiplication (f32, f"2)*f32
+            .insert(SpriteScale::from(COIN_SCALE)) 
+            .insert(Coin);
+
+        commands.entity(entity).despawn();
     }
 }
 
@@ -203,6 +239,7 @@ fn main() {
                 user_mouse_handler_zoom_event_system,
                 player_laser_hit_enemy_system,
                 animate_being_hitted,
+                spawn_coin_system,
             ),
         )
         .run();

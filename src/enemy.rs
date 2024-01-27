@@ -3,10 +3,10 @@ use std::time::Duration;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{Enemy, Health, Movable, Player, SpriteSize, Velocity};
+use crate::components::{Enemy, Health, Movable, Player, SpriteSize, Velocity, SpriteScale};
 
-use crate::resources::{EnemyCount, GameTextures, PlayerState, WinSize};
-use crate::{ENEMY_SIZE, SPRITE_SCALE};
+use crate::resources::{EnemyCount, GameTextures, PlayerState, WinSize, GameState};
+use crate::{ENEMY_SIZE, ENEMY_HEALTH, BASE_SPRITE_SCALE};
 use crate::{ENEMY_SPEED, NUM_ENEMIES_MAX};
 
 pub struct EnemyPlugin;
@@ -25,6 +25,7 @@ impl Plugin for EnemyPlugin {
 fn enemy_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
+    game_state: Res<GameState>,
     win_size: Res<WinSize>,
     mut enemy_count: ResMut<EnemyCount>,
 ) {
@@ -41,18 +42,15 @@ fn enemy_spawn_system(
         commands
             .spawn(SpriteBundle {
                 texture: game_textures.enemy.clone(),
-                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(
-                    SPRITE_SCALE,
-                    SPRITE_SCALE,
-                    1.0,
-                )),
+                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(BASE_SPRITE_SCALE.0 * game_state.zoom, BASE_SPRITE_SCALE.1 * game_state.zoom, 0.)),
                 ..Default::default()
             })
             .insert(Enemy)
             .insert(Movable)
             .insert(Velocity { x: 0., y: 0. })
             .insert(SpriteSize::from(ENEMY_SIZE))
-            .insert(Health(10));
+            .insert(SpriteScale::from(BASE_SPRITE_SCALE))
+            .insert(Health(ENEMY_HEALTH));
 
         enemy_count.alive += 1;
     }

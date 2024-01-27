@@ -4,10 +4,10 @@ use bevy::math::Vec2;
 use bevy::window::PrimaryWindow;
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{FromPlayer, Laser, Movable, Player, SpriteSize, Velocity};
+use crate::components::{FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity};
 
-use crate::resources::{GameTextures, PlayerState, WinSize};
-use crate::{PLAYER_LASER_SIZE, SPRITE_SCALE, PLAYER_LASER_SPEED};
+use crate::resources::{GameState, GameTextures, PlayerState, WinSize};
+use crate::{BASE_SPRITE_SCALE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED};
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -42,6 +42,7 @@ impl Plugin for PlayerPlugin {
 fn player_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
+    game_state: Res<GameState>,
     mut player_state: ResMut<PlayerState>,
 ) {
     if !player_state.alive {
@@ -49,14 +50,15 @@ fn player_spawn_system(
             .spawn(SpriteBundle {
                 texture: game_textures.player.clone(),
                 transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::new(
-                    SPRITE_SCALE,
-                    SPRITE_SCALE,
-                    1.0,
+                    BASE_SPRITE_SCALE.0 * game_state.zoom,
+                    BASE_SPRITE_SCALE.1 * game_state.zoom,
+                    0.,
                 )),
                 ..Default::default()
             })
             .insert(Player)
             .insert(Movable)
+            .insert(SpriteScale::from(BASE_SPRITE_SCALE))
             .insert(Velocity { x: 0., y: 0. });
         player_state.spawned();
     }
@@ -88,6 +90,7 @@ fn player_keyboard_event_system(
 fn player_fire_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
+    game_state: Res<GameState>,
     win_size: Res<WinSize>,
     kboard: Res<Input<KeyCode>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -126,11 +129,11 @@ fn player_fire_system(
                     texture: game_textures.player_laser.clone(),
                     // TODO: player_y as a part of the SPRITE?
                     transform: Transform::from_xyz(player_position.x, player_position.y, 0.)
-                        .with_scale(Vec3 {
-                            x: SPRITE_SCALE,
-                            y: SPRITE_SCALE,
-                            z: 1.,
-                        })
+                        .with_scale(Vec3::new(
+                            BASE_SPRITE_SCALE.0 * game_state.zoom,
+                            BASE_SPRITE_SCALE.1 * game_state.zoom,
+                            0.,
+                        ))
                         .with_rotation(Quat::from_rotation_z(angle)),
                     ..Default::default()
                 })
@@ -138,7 +141,8 @@ fn player_fire_system(
                 .insert(velocity)
                 .insert(FromPlayer)
                 .insert(Laser)
-                .insert(SpriteSize::from(PLAYER_LASER_SIZE));
+                .insert(SpriteSize::from(PLAYER_LASER_SIZE))
+                .insert(SpriteScale::from(BASE_SPRITE_SCALE));
         }
         // without key
         // spawn all other skins

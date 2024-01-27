@@ -31,7 +31,21 @@ impl From<(f32, f32)> for SpriteSize {
 }
 
 #[derive(Component)]
-pub struct Health(pub u16);
+pub struct SpriteScale(pub Vec2);
+impl From<(f32, f32)> for SpriteScale {
+    fn from(val: (f32, f32)) -> Self {
+        SpriteScale(Vec2::new(val.0, val.1))
+    }
+}
+
+#[derive(Component)]
+pub struct Health(pub f32);
 
 #[derive(Component)]
 pub struct BeingHitted(pub u16);
+
+#[derive(Component)]
+pub struct SpawnCoin(pub Vec2);
+
+#[derive(Component)]
+pub struct Coin;
