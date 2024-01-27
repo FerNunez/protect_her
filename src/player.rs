@@ -7,7 +7,7 @@ use bevy::{prelude::*, time::common_conditions::on_timer};
 use crate::components::{FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity};
 
 use crate::resources::{GameState, GameTextures, PlayerState, WinSize};
-use crate::{BASE_SPRITE_SCALE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED};
+use crate::{BASE_SPRITE_SCALE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED, PLAYER_SIZE};
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -59,6 +59,7 @@ fn player_spawn_system(
             .insert(Player)
             .insert(Movable)
             .insert(SpriteScale::from(BASE_SPRITE_SCALE))
+            .insert(SpriteSize::from(PLAYER_SIZE))
             .insert(Velocity { x: 0., y: 0. });
         player_state.spawned();
     }

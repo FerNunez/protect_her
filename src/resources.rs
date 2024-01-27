@@ -10,6 +10,7 @@ pub struct WinSize {
 #[derive(Resource)]
 pub struct GameState {
     pub zoom: f32,
+    pub coins: u64,
 }
 
 #[derive(Resource)]

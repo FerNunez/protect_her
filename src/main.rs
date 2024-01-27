@@ -1,10 +1,11 @@
 use bevy::{
-    input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*, sprite::{collide_aabb::collide,},
+    input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*, sprite::collide_aabb::collide,
     utils::HashSet, window::PrimaryWindow,
 };
 
 use components::{
-    Coin, Enemy, FromPlayer, Health, Laser, Movable, SpawnCoin, SpriteSize, Velocity, SpriteScale,
+    Coin, Enemy, FromPlayer, Health, Laser, Movable, Player, SpawnCoin, SpriteScale, SpriteSize,
+    Velocity,
 };
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
@@ -20,11 +21,12 @@ mod player;
 
 const NUM_ENEMIES_MAX: u32 = 1000;
 
-const BASE_SPRITE_SCALE: (f32,f32) = (0.5, 0.5);
+const BASE_SPRITE_SCALE: (f32, f32) = (0.5, 0.5);
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 const PLAYER_SPRITE: &str = "player_a_01.png";
-//const PLAYER_SIZE: (f32, f32) = (144., 75.0);
+const PLAYER_SIZE: (f32, f32) = (144., 75.0);
+
 const RESOLUTION: (f32, f32) = (2560., 1440.);
 const ENEMY_SPRITE: &str = "enemy_a_01.png";
 const ENEMY_SPEED: f32 = 0.22;
@@ -42,7 +44,10 @@ const COIN_SPRITE: &str = "watermelon.png";
 const COIN_SIZE: (f32, f32) = (16., 16.);
 const COIN_SCALE: (f32, f32) = (1.8, 1.8);
 
-fn zoom_system(game_state: ResMut<GameState>, mut query: Query<(&mut Transform, &SpriteScale), With<Sprite>>) {
+fn zoom_system(
+    game_state: ResMut<GameState>,
+    mut query: Query<(&mut Transform, &SpriteScale), With<Sprite>>,
+) {
     for (mut transform, sprite_scale) in query.iter_mut() {
         let scale = &mut transform.scale;
         scale.x = game_state.zoom * sprite_scale.0.x;
@@ -92,7 +97,10 @@ fn setup_system(
 
     commands.insert_resource(PlayerState::default());
 
-    let game_state = GameState { zoom: 0.5 };
+    let game_state = GameState {
+        zoom: 0.5,
+        coins: 0,
+    };
     commands.insert_resource(game_state);
 
     commands.insert_resource(EnemyCount { alive: 0, dead: 0 });
@@ -160,7 +168,10 @@ fn player_laser_hit_enemy_system(
                     despawned_entities.insert(enemy_entity);
 
                     //commands.spawn(ExplotionHere);
-                    commands.spawn(SpawnCoin( Vec2::new(enemy_tf.translation.x, enemy_tf.translation.y)));
+                    commands.spawn(SpawnCoin(Vec2::new(
+                        enemy_tf.translation.x,
+                        enemy_tf.translation.y,
+                    )));
                 }
 
                 // command action to change color of image
@@ -195,21 +206,70 @@ fn spawn_coin_system(
         let y = spawn_coin.0.y;
 
         let sprite_size = (COIN_SCALE.0 * COIN_SIZE.0, COIN_SCALE.1 * COIN_SIZE.1);
-        let sprite_scale = (COIN_SCALE.0 * game_state.zoom,  COIN_SCALE.1 *  game_state.zoom);
+        let sprite_scale = (
+            COIN_SCALE.0 * game_state.zoom,
+            COIN_SCALE.1 * game_state.zoom,
+        );
         commands
             .spawn(SpriteBundle {
                 texture: game_textures.coin.clone(),
-                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(sprite_scale.0, sprite_scale.1, 0.)),
+                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(
+                    sprite_scale.0,
+                    sprite_scale.1,
+                    0.,
+                )),
                 ..Default::default()
             })
             .insert(SpriteSize::from(sprite_size))
             // TODO: fix this. create muiltiplication (f32, f"2)*f32
-            .insert(SpriteScale::from(COIN_SCALE)) 
+            .insert(SpriteScale::from(COIN_SCALE))
             .insert(Coin);
 
         commands.entity(entity).despawn();
     }
 }
+
+fn player_pickup_coin_system(
+    mut commands: Commands,
+    mut game_state: ResMut<GameState>,
+    coin_query: Query<(Entity, &Transform, &SpriteSize), With<Coin>>,
+    player_query: Query<(&Transform, &SpriteSize), With<Player>>,
+) {
+    let mut despawned_entities: HashSet<Entity> = HashSet::new();
+
+    if let Ok((player_tf, player_size)) = player_query.get_single() {
+        let player_scale = Vec2::from(player_tf.scale.xy());
+
+        for (coin_entity, coin_tf, coin_size) in coin_query.iter() {
+            if despawned_entities.contains(&coin_entity) {
+                continue;
+            }
+
+            let coin_scale = Vec2::from(coin_tf.scale.xy());
+
+            // Collision
+            let collision = collide(
+                player_tf.translation,
+                player_size.0 * player_scale,
+                coin_tf.translation,
+                coin_size.0 * coin_scale,
+            );
+
+            // perform collision
+            if let Some(_) = collision {
+                commands.entity(coin_entity).despawn();
+                despawned_entities.insert(coin_entity);
+                game_state.coins += 1;
+            }
+        }
+    }
+}
+
+
+//fn show_coins_system(
+//    game_state: Res<GameState>,
+//) {
+//}
 
 fn main() {
     App::new()
@@ -240,6 +300,7 @@ fn main() {
                 player_laser_hit_enemy_system,
                 animate_being_hitted,
                 spawn_coin_system,
+                player_pickup_coin_system,
             ),
         )
         .run();
