@@ -4,10 +4,10 @@ use bevy::math::Vec2;
 use bevy::window::PrimaryWindow;
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity};
+use crate::components::{FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity, Damage};
 
 use crate::resources::{GameState, GameTextures, PlayerState, WinSize};
-use crate::{BASE_SPRITE_SCALE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED, PLAYER_SIZE};
+use crate::{BASE_SPRITE_SCALE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED, PLAYER_SIZE, PLAYER_DAMAGE};
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -142,6 +142,7 @@ fn player_fire_system(
                 .insert(velocity)
                 .insert(FromPlayer)
                 .insert(Laser)
+                .insert(Damage(PLAYER_DAMAGE))
                 .insert(SpriteSize::from(PLAYER_LASER_SIZE))
                 .insert(SpriteScale::from(BASE_SPRITE_SCALE));
         }

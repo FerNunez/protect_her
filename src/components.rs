@@ -49,3 +49,6 @@ pub struct SpawnCoin(pub Vec2);
 
 #[derive(Component)]
 pub struct Coin;
+
+#[derive(Component)]
+pub struct Damage(pub f32);

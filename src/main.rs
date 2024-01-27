@@ -5,7 +5,7 @@ use bevy::{
 
 use components::{
     Coin, Enemy, FromPlayer, Health, Laser, Movable, Player, SpawnCoin, SpriteScale, SpriteSize,
-    Velocity,
+    Velocity, Damage,
 };
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
@@ -36,7 +36,7 @@ const ENEMY_HEALTH: f32 = 3.;
 const PLAYER_LASER_SPRITE: &str = "laser_b_01.png";
 const PLAYER_LASER_SIZE: (f32, f32) = (17., 55.);
 const PLAYER_LASER_SPEED: f32 = 1.8;
-const PLAYER_DAMAGE: f32 = 1.;
+const PLAYER_DAMAGE: f32 = 2.;
 
 const FRAMES_HITTED: u16 = 10;
 
@@ -120,12 +120,12 @@ fn movable_system(
 fn player_laser_hit_enemy_system(
     mut commands: Commands,
     mut enemy_count: ResMut<EnemyCount>,
-    laser_query: Query<(Entity, &Transform, &SpriteSize), (With<Laser>, With<FromPlayer>)>,
+    laser_query: Query<(Entity, &Transform, &SpriteSize, &Damage), (With<Laser>, With<FromPlayer>)>,
     mut enemy_query: Query<(Entity, &Transform, &SpriteSize, &mut Health), With<Enemy>>,
 ) {
     let mut despawned_entities: HashSet<Entity> = HashSet::new();
 
-    for (laser_entity, laser_tf, laser_size) in laser_query.iter() {
+    for (laser_entity, laser_tf, laser_size, laser_damage) in laser_query.iter() {
         //println!("Test2");
         if despawned_entities.contains(&laser_entity) {
             continue;
@@ -155,7 +155,8 @@ fn player_laser_hit_enemy_system(
                 commands.entity(laser_entity).despawn();
                 despawned_entities.insert(laser_entity);
 
-                health.0 -= PLAYER_DAMAGE;
+                health.0 -= laser_damage.0;
+
 
                 // spawn Explosion at enemy tf
                 commands.entity(enemy_entity).insert(BeingHitted(0));
