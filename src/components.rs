@@ -58,3 +58,9 @@ pub struct SpawnSkill(pub Vec2);
 
 #[derive(Component)]
 pub struct UI;
+
+#[derive(Component)]
+pub struct WithReloadtime(pub f32);
+
+
+

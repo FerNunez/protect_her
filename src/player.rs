@@ -9,7 +9,9 @@ use crate::components::{
     Damage, FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity,
 };
 
-use crate::resources::{GameState, GameTextures, PlayerSkills, PlayerState, WinSize};
+use crate::resources::{
+    AtomaticPlayerSkillList, GameState, GameTextures, PlayerSkill, PlayerState, WinSize,
+};
 use crate::{BASE_SPRITE_SCALE, PLAYER_DAMAGE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED, PLAYER_SIZE};
 
 impl Default for PlayerState {
@@ -95,7 +97,9 @@ fn player_fire_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     game_state: Res<GameState>,
-    mut player_skills: ResMut<PlayerSkills>,
+    mut automatic_player_skill_list: ResMut<AtomaticPlayerSkillList>,
+    mut player_skill: ResMut<PlayerSkill>,
+    time: Res<Time>,
     win_size: Res<WinSize>,
     kboard: Res<Input<KeyCode>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -128,34 +132,42 @@ fn player_fire_system(
         };
 
         // with key
-        if kboard.just_pressed(KeyCode::Space) {
+        if kboard.pressed(KeyCode::Space) {
             // probably set here a OPP? single call
-            commands
-                .spawn(SpriteBundle {
-                    texture: game_textures.player_laser.clone(),
-                    // TODO: player_y as a part of the SPRITE?
-                    transform: Transform::from_xyz(player_position.x, player_position.y, 0.)
-                        .with_scale(Vec3::new(
-                            BASE_SPRITE_SCALE.0 * game_state.zoom,
-                            BASE_SPRITE_SCALE.1 * game_state.zoom,
-                            0.,
-                        ))
-                        .with_rotation(Quat::from_rotation_z(angle)),
-                    ..Default::default()
-                })
-                .insert(Movable)
-                .insert(velocity)
-                .insert(FromPlayer)
-                .insert(Laser)
-                .insert(Damage(PLAYER_DAMAGE))
-                .insert(SpriteSize::from(PLAYER_LASER_SIZE))
-                .insert(SpriteScale::from(BASE_SPRITE_SCALE));
+
+            player_skill.timer.tick(time.delta());
+            if player_skill.timer.finished() {
+                player_skill.timer.reset();
+                commands
+                    .spawn(SpriteBundle {
+                        texture: game_textures.player_laser.clone(),
+                        // TODO: player_y as a part of the SPRITE?
+                        transform: Transform::from_xyz(player_position.x, player_position.y, 0.)
+                            .with_scale(Vec3::new(
+                                BASE_SPRITE_SCALE.0 * game_state.zoom,
+                                BASE_SPRITE_SCALE.1 * game_state.zoom,
+                                0.,
+                            ))
+                            .with_rotation(Quat::from_rotation_z(angle)),
+                        ..Default::default()
+                    })
+                    .insert(Movable)
+                    .insert(velocity)
+                    .insert(FromPlayer)
+                    .insert(Laser)
+                    .insert(Damage(PLAYER_DAMAGE))
+                    .insert(SpriteSize::from(PLAYER_LASER_SIZE))
+                    .insert(SpriteScale::from(BASE_SPRITE_SCALE));
+            }
         }
         // without key
         // spawn all other skins
-        for skill in &player_skills.0 {
-            if *skill {
-                for angle in (0..=360).step_by(10) {
+        for auto_player_skill in &mut automatic_player_skill_list.0 {
+            auto_player_skill.timer.tick(time.delta());
+
+            if auto_player_skill.timer.finished() {
+                auto_player_skill.timer.reset();
+                for angle in (0..=360).step_by(20) {
                     let angle = (angle as f32) * PI / 180.;
                     let x = angle.cos();
                     let y = angle.sin();
@@ -174,7 +186,7 @@ fn player_fire_system(
                                 BASE_SPRITE_SCALE.1 * game_state.zoom,
                                 0.,
                             ))
-                            .with_rotation(Quat::from_rotation_z(angle)),
+                            .with_rotation(Quat::from_rotation_z(angle - PI / 2.)),
                             ..Default::default()
                         })
                         .insert(Movable)

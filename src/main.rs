@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::{
     input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*, sprite::collide_aabb::collide,
     utils::HashSet, window::PrimaryWindow,
@@ -9,7 +11,9 @@ use components::{
 };
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
-use resources::{EnemyCount, GameState, GameTextures, PlayerSkills, PlayerState, WinSize};
+use resources::{
+    AtomaticPlayerSkillList, EnemyCount, GameState, GameTextures, PlayerSkill, PlayerState, WinSize,
+};
 
 use crate::components::BeingHitted;
 
@@ -31,7 +35,7 @@ const RESOLUTION: (f32, f32) = (2560., 1440.);
 const ENEMY_SPRITE: &str = "enemy_a_01.png";
 const ENEMY_SPEED: f32 = 0.22;
 const ENEMY_SIZE: (f32, f32) = (144., 75.0);
-const ENEMY_HEALTH: f32 = 3.;
+const ENEMY_HEALTH: f32 = 10.;
 
 const PLAYER_LASER_SPRITE: &str = "laser_b_01.png";
 const PLAYER_LASER_SIZE: (f32, f32) = (17., 55.);
@@ -110,7 +114,10 @@ fn setup_system(
 
     commands.insert_resource(EnemyCount { alive: 0, dead: 0 });
 
-    commands.insert_resource(PlayerSkills(Vec::new()));
+    commands.insert_resource(PlayerSkill {
+        timer: Timer::new(Duration::from_millis(100), TimerMode::Once),
+    });
+    commands.insert_resource(AtomaticPlayerSkillList(Vec::new()));
 }
 
 fn movable_system(
@@ -133,7 +140,6 @@ fn player_laser_hit_enemy_system(
     let mut despawned_entities: HashSet<Entity> = HashSet::new();
 
     for (laser_entity, laser_tf, laser_size, laser_damage) in laser_query.iter() {
-        //println!("Test2");
         if despawned_entities.contains(&laser_entity) {
             continue;
         }
@@ -305,7 +311,7 @@ fn spawn_skill_system(
 
 fn player_pickup_skill_system(
     mut commands: Commands,
-    mut player_skills: ResMut<PlayerSkills>,
+    mut player_skill_list: ResMut<AtomaticPlayerSkillList>,
     skill_query: Query<(Entity, &Transform, &SpriteSize), With<UI>>,
     player_query: Query<(&Transform, &SpriteSize), With<Player>>,
 ) {
@@ -326,7 +332,9 @@ fn player_pickup_skill_system(
             // perform collision
             if let Some(_) = collision {
                 commands.entity(skill_entity).despawn();
-                player_skills.0.push(true);
+                player_skill_list.0.push(PlayerSkill {
+                    timer: Timer::new(Duration::from_millis(1500), TimerMode::Once),
+                });
             }
         }
     }

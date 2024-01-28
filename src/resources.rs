@@ -1,4 +1,4 @@
-use bevy::prelude::{Handle, Image, Resource};
+use bevy::{prelude::{Handle, Image, Resource}, time::Timer};
 
 // Resources
 #[derive(Resource)]
@@ -28,11 +28,16 @@ pub struct PlayerState {
 }
 
 #[derive(Resource)]
-pub struct EnemyCount { 
-    pub alive: u32, 
-    pub dead: u32 ,
+pub struct EnemyCount {
+    pub alive: u32,
+    pub dead: u32,
 }
 
 #[derive(Resource)]
-pub struct PlayerSkills(pub Vec<bool>);
+pub struct PlayerSkill {
+    pub timer: Timer, 
+}
 
+
+#[derive(Resource)]
+pub struct AtomaticPlayerSkillList(pub Vec<PlayerSkill>);
