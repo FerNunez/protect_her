@@ -4,12 +4,12 @@ use bevy::{
 };
 
 use components::{
-    Coin, Enemy, FromPlayer, Health, Laser, Movable, Player, SpawnCoin, SpriteScale, SpriteSize,
-    Velocity, Damage,
+    Coin, Damage, Enemy, FromPlayer, Health, Laser, Movable, Player, SpawnCoin, SpawnSkill,
+    SpriteScale, SpriteSize, Velocity, UI,
 };
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
-use resources::{EnemyCount, GameState, GameTextures, PlayerState, WinSize};
+use resources::{EnemyCount, GameState, GameTextures, PlayerSkills, PlayerState, WinSize};
 
 use crate::components::BeingHitted;
 
@@ -44,9 +44,13 @@ const COIN_SPRITE: &str = "watermelon.png";
 const COIN_SIZE: (f32, f32) = (16., 16.);
 const COIN_SCALE: (f32, f32) = (1.8, 1.8);
 
+const SKILL_SPRITE: &str = "TikTok.png";
+const SKILL_SIZE: (f32, f32) = (24., 24.);
+const SKILL_SCALE: (f32, f32) = (1., 1.);
+
 fn zoom_system(
     game_state: ResMut<GameState>,
-    mut query: Query<(&mut Transform, &SpriteScale), With<Sprite>>,
+    mut query: Query<(&mut Transform, &SpriteScale), (With<Sprite>, Without<UI>)>,
 ) {
     for (mut transform, sprite_scale) in query.iter_mut() {
         let scale = &mut transform.scale;
@@ -92,6 +96,7 @@ fn setup_system(
         enemy: asset_server.load(ENEMY_SPRITE),
         player_laser: asset_server.load(PLAYER_LASER_SPRITE),
         coin: asset_server.load(COIN_SPRITE),
+        skill: asset_server.load(SKILL_SPRITE),
     };
     commands.insert_resource(game_texture);
 
@@ -104,6 +109,8 @@ fn setup_system(
     commands.insert_resource(game_state);
 
     commands.insert_resource(EnemyCount { alive: 0, dead: 0 });
+
+    commands.insert_resource(PlayerSkills(Vec::new()));
 }
 
 fn movable_system(
@@ -156,7 +163,6 @@ fn player_laser_hit_enemy_system(
                 despawned_entities.insert(laser_entity);
 
                 health.0 -= laser_damage.0;
-
 
                 // spawn Explosion at enemy tf
                 commands.entity(enemy_entity).insert(BeingHitted(0));
@@ -237,6 +243,7 @@ fn player_pickup_coin_system(
     player_query: Query<(&Transform, &SpriteSize), With<Player>>,
 ) {
     let mut despawned_entities: HashSet<Entity> = HashSet::new();
+    let mut skill_spawned = false;
 
     if let Ok((player_tf, player_size)) = player_query.get_single() {
         let player_scale = Vec2::from(player_tf.scale.xy());
@@ -261,16 +268,69 @@ fn player_pickup_coin_system(
                 commands.entity(coin_entity).despawn();
                 despawned_entities.insert(coin_entity);
                 game_state.coins += 1;
+
+                if game_state.coins == 2 && !skill_spawned {
+                    commands.spawn(SpawnSkill(Vec2::new(0., 0.)));
+                    skill_spawned = true;
+                }
             }
         }
     }
 }
 
-//fn show_coins_system(
-//    game_state: Res<GameState>,
-//) {
-//}
+fn spawn_skill_system(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    win_size: Res<WinSize>,
+    spawn_skill_query: Query<(Entity, &SpawnSkill)>,
+) {
+    if let Ok((entity, _spawn_skill)) = spawn_skill_query.get_single() {
+        commands
+            .spawn(SpriteBundle {
+                texture: game_textures.skill.clone(),
+                transform: Transform::from_xyz(
+                    (-win_size.w / 2.) + 10.,
+                    (win_size.h / 2.) - 10.,
+                    0.,
+                )
+                .with_scale(Vec3::new(SKILL_SCALE.0, SKILL_SCALE.1, 1.)),
+                ..Default::default()
+            })
+            .insert(UI)
+            .insert(SpriteSize::from(SKILL_SIZE));
 
+        commands.entity(entity).despawn();
+    }
+}
+
+fn player_pickup_skill_system(
+    mut commands: Commands,
+    mut player_skills: ResMut<PlayerSkills>,
+    skill_query: Query<(Entity, &Transform, &SpriteSize), With<UI>>,
+    player_query: Query<(&Transform, &SpriteSize), With<Player>>,
+) {
+    if let Ok((player_tf, player_size)) = player_query.get_single() {
+        let player_scale = Vec2::from(player_tf.scale.xy());
+
+        for (skill_entity, skill_tf, skill_size) in skill_query.iter() {
+            let skill_scale = Vec2::from(skill_tf.scale.xy());
+
+            // Collision
+            let collision = collide(
+                player_tf.translation,
+                player_size.0 * player_scale,
+                skill_tf.translation,
+                skill_size.0 * skill_scale,
+            );
+
+            // perform collision
+            if let Some(_) = collision {
+                commands.entity(skill_entity).despawn();
+                player_skills.0.push(true);
+            }
+        }
+    }
+}
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Rgba {
@@ -301,6 +361,8 @@ fn main() {
                 animate_being_hitted,
                 spawn_coin_system,
                 player_pickup_coin_system,
+                spawn_skill_system,
+                player_pickup_skill_system,
             ),
         )
         .run();

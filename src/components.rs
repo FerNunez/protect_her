@@ -52,3 +52,9 @@ pub struct Coin;
 
 #[derive(Component)]
 pub struct Damage(pub f32);
+
+#[derive(Component)]
+pub struct SpawnSkill(pub Vec2);
+
+#[derive(Component)]
+pub struct UI;

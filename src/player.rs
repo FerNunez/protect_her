@@ -1,13 +1,16 @@
+use std::f32::consts::PI;
 use std::time::Duration;
 
 use bevy::math::Vec2;
 use bevy::window::PrimaryWindow;
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity, Damage};
+use crate::components::{
+    Damage, FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity,
+};
 
-use crate::resources::{GameState, GameTextures, PlayerState, WinSize};
-use crate::{BASE_SPRITE_SCALE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED, PLAYER_SIZE, PLAYER_DAMAGE};
+use crate::resources::{GameState, GameTextures, PlayerSkills, PlayerState, WinSize};
+use crate::{BASE_SPRITE_SCALE, PLAYER_DAMAGE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED, PLAYER_SIZE};
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -92,12 +95,14 @@ fn player_fire_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     game_state: Res<GameState>,
+    mut player_skills: ResMut<PlayerSkills>,
     win_size: Res<WinSize>,
     kboard: Res<Input<KeyCode>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     query: Query<&Transform, With<Player>>,
 ) {
     if let Ok(player_tf) = query.get_single() {
+        // get vector velocity
         let player_position = Vec2::new(player_tf.translation.x, player_tf.translation.y);
         let mouse_position = window_query.single().cursor_position();
 
@@ -148,5 +153,39 @@ fn player_fire_system(
         }
         // without key
         // spawn all other skins
+        for skill in &player_skills.0 {
+            if *skill {
+                for angle in (0..=360).step_by(10) {
+                    let angle = (angle as f32) * PI / 180.;
+                    let x = angle.cos();
+                    let y = angle.sin();
+
+                    commands
+                        .spawn(SpriteBundle {
+                            texture: game_textures.player_laser.clone(),
+                            // TODO: player_y as a part of the SPRITE?
+                            transform: Transform::from_xyz(
+                                player_position.x,
+                                player_position.y,
+                                0.,
+                            )
+                            .with_scale(Vec3::new(
+                                BASE_SPRITE_SCALE.0 * game_state.zoom,
+                                BASE_SPRITE_SCALE.1 * game_state.zoom,
+                                0.,
+                            ))
+                            .with_rotation(Quat::from_rotation_z(angle)),
+                            ..Default::default()
+                        })
+                        .insert(Movable)
+                        .insert(Velocity { x, y })
+                        .insert(FromPlayer)
+                        .insert(Laser)
+                        .insert(Damage(PLAYER_DAMAGE))
+                        .insert(SpriteSize::from(PLAYER_LASER_SIZE))
+                        .insert(SpriteScale::from(BASE_SPRITE_SCALE));
+                }
+            }
+        }
     }
 }

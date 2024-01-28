@@ -19,6 +19,7 @@ pub struct GameTextures {
     pub enemy: Handle<Image>,
     pub player_laser: Handle<Image>,
     pub coin: Handle<Image>,
+    pub skill: Handle<Image>,
 }
 
 #[derive(Resource)]
@@ -32,4 +33,6 @@ pub struct EnemyCount {
     pub dead: u32 ,
 }
 
+#[derive(Resource)]
+pub struct PlayerSkills(pub Vec<bool>);
 
