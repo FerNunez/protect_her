@@ -62,5 +62,6 @@ pub struct UI;
 #[derive(Component)]
 pub struct WithReloadtime(pub f32);
 
-
+#[derive(Component)]
+pub struct CoinText;
 

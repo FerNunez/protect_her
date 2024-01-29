@@ -6,8 +6,8 @@ use bevy::{
 };
 
 use components::{
-    Coin, Damage, Enemy, FromPlayer, Health, Laser, Movable, Player, SpawnCoin, SpawnSkill,
-    SpriteScale, SpriteSize, Velocity, UI,
+    Coin, CoinText, Damage, Enemy, FromPlayer, Health, Laser, Movable, Player, SpawnCoin,
+    SpawnSkill, SpriteScale, SpriteSize, Velocity, UI,
 };
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
@@ -118,6 +118,33 @@ fn setup_system(
         timer: Timer::new(Duration::from_millis(100), TimerMode::Once),
     });
     commands.insert_resource(AtomaticPlayerSkillList(Vec::new()));
+
+    commands.spawn((
+        TextBundle::from_sections([
+            TextSection::new(
+                "Coins ",
+                TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 50.,
+                    ..default()
+                },
+            ),
+            TextSection::from_style(TextStyle {
+                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                font_size: 50.,
+                color: Color::GOLD,
+                ..default()
+            }),
+        ])
+        .with_text_alignment(TextAlignment::Center)
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(5.0),
+            right: Val::Px(5.0),
+            ..default()
+        }),
+        CoinText,
+    ));
 }
 
 fn movable_system(
@@ -339,6 +366,13 @@ fn player_pickup_skill_system(
         }
     }
 }
+
+fn text_update_system(game_state: Res<GameState>, mut query: Query<&mut Text, With<CoinText>>) {
+    for mut text in &mut query {
+        text.sections[1].value = format!("{}", game_state.coins)
+    }
+}
+
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::Rgba {
@@ -371,6 +405,7 @@ fn main() {
                 player_pickup_coin_system,
                 spawn_skill_system,
                 player_pickup_skill_system,
+                text_update_system,
             ),
         )
         .run();
