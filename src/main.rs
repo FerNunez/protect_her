@@ -1,3 +1,4 @@
+
 use std::time::Duration;
 
 use bevy::{
@@ -30,6 +31,13 @@ const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 const PLAYER_SPRITE: &str = "player_a_01.png";
 const PLAYER_SIZE: (f32, f32) = (144., 75.0);
+
+const EGG_SPRITE: &str = "egg.png";
+const EGG_SIZE: (f32,f32) = (144., 75.0);
+
+const SPERM: &str = "sperm.png";
+const SPERM_HEAD_SPRITE: &str = "sperm_head.png";
+const SPERM_HEAD_SIZE: (f32,f32) = (144., 75.0);
 
 const RESOLUTION: (f32, f32) = (2560., 1440.);
 const ENEMY_SPRITE: &str = "enemy_a_01.png";
@@ -96,8 +104,8 @@ fn setup_system(
     commands.insert_resource(win_size);
 
     let game_texture = GameTextures {
-        player: asset_server.load(PLAYER_SPRITE),
-        enemy: asset_server.load(ENEMY_SPRITE),
+        player: asset_server.load(EGG_SPRITE),
+        enemy: asset_server.load(SPERM),
         player_laser: asset_server.load(PLAYER_LASER_SPRITE),
         coin: asset_server.load(COIN_SPRITE),
         skill: asset_server.load(SKILL_SPRITE),

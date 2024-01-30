@@ -1,4 +1,6 @@
 use rand::{thread_rng, Rng};
+use std::f32::consts::PI;
+use std::ops::Rem;
 use std::time::Duration;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
@@ -62,17 +64,23 @@ fn enemy_spawn_system(
 
 fn enemy_target_player(
     player_state: Res<PlayerState>,
-    mut enemy_query: Query<(&mut Velocity, &Transform), With<Enemy>>,
+    mut enemy_query: Query<(&mut Velocity, &mut Transform), (With<Enemy>, Without<Player>)>,
     player_query: Query<&Transform, With<Player>>,
 ) {
     if player_state.alive {
         if let Ok(player_transform) = player_query.get_single() {
-            for (mut enemy_velocity, enemy_transform) in enemy_query.iter_mut() {
+            for (mut enemy_velocity, mut enemy_transform) in enemy_query.iter_mut() {
                 enemy_velocity.x = player_transform.translation.x - enemy_transform.translation.x;
                 enemy_velocity.y = player_transform.translation.y - enemy_transform.translation.y;
                 let speed = bevy::prelude::Vec2::from((enemy_velocity.x, enemy_velocity.y));
                 enemy_velocity.x *= (ENEMY_SPEED / speed.length()) * 0.35;
                 enemy_velocity.y *= ENEMY_SPEED / speed.length() * 0.35;
+
+                let direction_vector = Vec2::new(enemy_velocity.x, -enemy_velocity.y);
+                let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 });
+                let angle_diff = enemy_transform.rotation.z - angle + PI/2.;
+
+                enemy_transform.rotation = Quat::from_rotation_z(angle + PI/2.);
             }
         }
     }
