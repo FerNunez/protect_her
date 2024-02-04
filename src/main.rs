@@ -1,4 +1,3 @@
-
 use std::time::Duration;
 
 use bevy::{
@@ -7,16 +6,14 @@ use bevy::{
 };
 
 use components::{
-    Coin, CoinText, Damage, Enemy, FromPlayer, Health, Laser, Movable, Player, SpawnCoin,
-    SpawnSkill, SpriteScale, SpriteSize, Velocity, UI,
+    BeingHitted, Coin, CoinText, Damage, Enemy, FromPlayer, Health, Laser, Movable, Player,
+    SpawnCoin, SpawnSkill, SpriteSize, Velocity, UI,
 };
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
 use resources::{
     AtomaticPlayerSkillList, EnemyCount, GameState, GameTextures, PlayerSkill, PlayerState, WinSize,
 };
-
-use crate::components::BeingHitted;
 
 mod components;
 mod resources;
@@ -26,48 +23,43 @@ mod player;
 
 const NUM_ENEMIES_MAX: u32 = 1000;
 
-const BASE_SPRITE_SCALE: (f32, f32) = (0.5, 0.5);
+const BASE_SPRITE_SCALE: f32 = 1.;
 const TIME_STEP: f32 = 1. / 60.;
-const BASE_SPEED: f32 = 500.;
-const PLAYER_SPRITE: &str = "player_a_01.png";
-const PLAYER_SIZE: (f32, f32) = (144., 75.0);
+const BASE_SPEED: f32 = 400.;
+const RESOLUTION: (f32, f32) = (2560., 1440.);
 
 const EGG_SPRITE: &str = "egg.png";
-const EGG_SIZE: (f32,f32) = (144., 75.0);
+const EGG_SIZE: (f32, f32) = (282., 303.);
+const EGG_SCALE: f32 = 0.12;
 
 const SPERM: &str = "sperm.png";
-const SPERM_HEAD_SPRITE: &str = "sperm_head.png";
-const SPERM_HEAD_SIZE: (f32,f32) = (144., 75.0);
-
-const RESOLUTION: (f32, f32) = (2560., 1440.);
-const ENEMY_SPRITE: &str = "enemy_a_01.png";
-const ENEMY_SPEED: f32 = 0.22;
-const ENEMY_SIZE: (f32, f32) = (144., 75.0);
-const ENEMY_HEALTH: f32 = 10.;
+const SPERM_SCALE: f32 = 0.3;
+const SPERM_SPEED: f32 = 0.2;
+const SPERM_SIZE: (f32, f32) = (144., 75.0);
+const SPERM_HEALTH: f32 = 10.;
 
 const PLAYER_LASER_SPRITE: &str = "laser_b_01.png";
 const PLAYER_LASER_SIZE: (f32, f32) = (17., 55.);
-const PLAYER_LASER_SPEED: f32 = 1.8;
+const PLAYER_LASER_SPEED: f32 = 1.3;
 const PLAYER_DAMAGE: f32 = 2.;
+const PLAYER_LASER_SCALE: f32 = 0.4;
 
 const FRAMES_HITTED: u16 = 10;
 
 const COIN_SPRITE: &str = "watermelon.png";
 const COIN_SIZE: (f32, f32) = (16., 16.);
-const COIN_SCALE: (f32, f32) = (1.8, 1.8);
+const COIN_SCALE: f32 = 1.2;
 
 const SKILL_SPRITE: &str = "TikTok.png";
 const SKILL_SIZE: (f32, f32) = (24., 24.);
-const SKILL_SCALE: (f32, f32) = (1., 1.);
+const SKILL_SCALE: f32 = 1.;
 
 fn zoom_system(
     game_state: ResMut<GameState>,
-    mut query: Query<(&mut Transform, &SpriteScale), (With<Sprite>, Without<UI>)>,
+    mut camera_query: Query<&mut OrthographicProjection, With<Camera>>,
 ) {
-    for (mut transform, sprite_scale) in query.iter_mut() {
-        let scale = &mut transform.scale;
-        scale.x = game_state.zoom * sprite_scale.0.x;
-        scale.y = game_state.zoom * sprite_scale.0.y;
+    for mut projection in camera_query.iter_mut() {
+        projection.scale = game_state.zoom;
     }
 }
 
@@ -114,10 +106,7 @@ fn setup_system(
 
     commands.insert_resource(PlayerState::default());
 
-    let game_state = GameState {
-        zoom: 0.5,
-        coins: 0,
-    };
+    let game_state = GameState { zoom: 1., coins: 0 };
     commands.insert_resource(game_state);
 
     commands.insert_resource(EnemyCount { alive: 0, dead: 0 });
@@ -156,13 +145,12 @@ fn setup_system(
 }
 
 fn movable_system(
-    game_state: ResMut<GameState>,
     mut query: Query<(&Velocity, &mut Transform), With<Movable>>,
 ) {
     for (velocity, mut transform) in query.iter_mut() {
         let translation = &mut transform.translation;
-        translation.x += velocity.x * TIME_STEP * BASE_SPEED * game_state.zoom;
-        translation.y += velocity.y * TIME_STEP * BASE_SPEED * game_state.zoom;
+        translation.x += velocity.x * TIME_STEP * BASE_SPEED;
+        translation.y += velocity.y * TIME_STEP * BASE_SPEED;
     }
 }
 
@@ -246,31 +234,22 @@ fn animate_being_hitted(
 fn spawn_coin_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
-    game_state: Res<GameState>,
     query: Query<(Entity, &SpawnCoin)>,
 ) {
     for (entity, spawn_coin) in query.iter() {
         let x = spawn_coin.0.x;
         let y = spawn_coin.0.y;
 
-        let sprite_size = (COIN_SCALE.0 * COIN_SIZE.0, COIN_SCALE.1 * COIN_SIZE.1);
-        let sprite_scale = (
-            COIN_SCALE.0 * game_state.zoom,
-            COIN_SCALE.1 * game_state.zoom,
-        );
+        let sprite_size = (COIN_SCALE * COIN_SIZE.0, COIN_SCALE * COIN_SIZE.1);
         commands
             .spawn(SpriteBundle {
                 texture: game_textures.coin.clone(),
-                transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(
-                    sprite_scale.0,
-                    sprite_scale.1,
-                    0.,
-                )),
+                transform: Transform::from_xyz(x, y, 0.0)
+                    .with_scale(Vec3::new(COIN_SCALE, COIN_SCALE, 0.)),
                 ..Default::default()
             })
             .insert(SpriteSize::from(sprite_size))
             // TODO: fix this. create muiltiplication (f32, f"2)*f32
-            .insert(SpriteScale::from(COIN_SCALE))
             .insert(Coin);
 
         commands.entity(entity).despawn();
@@ -334,7 +313,7 @@ fn spawn_skill_system(
                     (win_size.h / 2.) - 10.,
                     0.,
                 )
-                .with_scale(Vec3::new(SKILL_SCALE.0, SKILL_SCALE.1, 1.)),
+                .with_scale(Vec3::new(SKILL_SCALE, SKILL_SCALE, 1.)),
                 ..Default::default()
             })
             .insert(UI)

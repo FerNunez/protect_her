@@ -5,14 +5,12 @@ use bevy::math::Vec2;
 use bevy::window::PrimaryWindow;
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{
-    Damage, FromPlayer, Laser, Movable, Player, SpriteScale, SpriteSize, Velocity,
-};
+use crate::components::{Damage, FromPlayer, Laser, Movable, Player, SpriteSize, Velocity};
 
-use crate::resources::{
-    AtomaticPlayerSkillList, GameState, GameTextures, PlayerSkill, PlayerState, WinSize,
+use crate::resources::{AtomaticPlayerSkillList, GameTextures, PlayerSkill, PlayerState, WinSize};
+use crate::{
+    EGG_SCALE, EGG_SIZE, PLAYER_DAMAGE, PLAYER_LASER_SCALE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED,
 };
-use crate::{BASE_SPRITE_SCALE, PLAYER_DAMAGE, PLAYER_LASER_SIZE, PLAYER_LASER_SPEED, PLAYER_SIZE};
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -47,24 +45,19 @@ impl Plugin for PlayerPlugin {
 fn player_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
-    game_state: Res<GameState>,
     mut player_state: ResMut<PlayerState>,
 ) {
     if !player_state.alive {
         commands
             .spawn(SpriteBundle {
                 texture: game_textures.player.clone(),
-                transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::new(
-                    BASE_SPRITE_SCALE.0 * game_state.zoom,
-                    BASE_SPRITE_SCALE.1 * game_state.zoom,
-                    0.,
-                )),
+                transform: Transform::from_xyz(0.0, 0.0, 0.0)
+                    .with_scale(Vec3::new(EGG_SCALE, EGG_SCALE, 0.)),
                 ..Default::default()
             })
             .insert(Player)
             .insert(Movable)
-            .insert(SpriteScale::from(BASE_SPRITE_SCALE))
-            .insert(SpriteSize::from(PLAYER_SIZE))
+            .insert(SpriteSize::from(EGG_SIZE))
             .insert(Velocity { x: 0., y: 0. });
         player_state.spawned();
     }
@@ -96,7 +89,6 @@ fn player_keyboard_event_system(
 fn player_fire_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
-    game_state: Res<GameState>,
     mut automatic_player_skill_list: ResMut<AtomaticPlayerSkillList>,
     mut player_skill: ResMut<PlayerSkill>,
     time: Res<Time>,
@@ -143,11 +135,7 @@ fn player_fire_system(
                         texture: game_textures.player_laser.clone(),
                         // TODO: player_y as a part of the SPRITE?
                         transform: Transform::from_xyz(player_position.x, player_position.y, 0.)
-                            .with_scale(Vec3::new(
-                                BASE_SPRITE_SCALE.0 * game_state.zoom,
-                                BASE_SPRITE_SCALE.1 * game_state.zoom,
-                                0.,
-                            ))
+                            .with_scale(Vec3::new(PLAYER_LASER_SCALE, PLAYER_LASER_SCALE, 0.))
                             .with_rotation(Quat::from_rotation_z(angle)),
                         ..Default::default()
                     })
@@ -156,8 +144,7 @@ fn player_fire_system(
                     .insert(FromPlayer)
                     .insert(Laser)
                     .insert(Damage(PLAYER_DAMAGE))
-                    .insert(SpriteSize::from(PLAYER_LASER_SIZE))
-                    .insert(SpriteScale::from(BASE_SPRITE_SCALE));
+                    .insert(SpriteSize::from(PLAYER_LASER_SIZE));
             }
         }
         // without key
@@ -181,11 +168,7 @@ fn player_fire_system(
                                 player_position.y,
                                 0.,
                             )
-                            .with_scale(Vec3::new(
-                                BASE_SPRITE_SCALE.0 * game_state.zoom,
-                                BASE_SPRITE_SCALE.1 * game_state.zoom,
-                                0.,
-                            ))
+                            .with_scale(Vec3::new(PLAYER_LASER_SCALE, PLAYER_LASER_SCALE, 0.))
                             .with_rotation(Quat::from_rotation_z(angle - PI / 2.)),
                             ..Default::default()
                         })
@@ -194,8 +177,7 @@ fn player_fire_system(
                         .insert(FromPlayer)
                         .insert(Laser)
                         .insert(Damage(PLAYER_DAMAGE))
-                        .insert(SpriteSize::from(PLAYER_LASER_SIZE))
-                        .insert(SpriteScale::from(BASE_SPRITE_SCALE));
+                        .insert(SpriteSize::from(PLAYER_LASER_SIZE));
                 }
             }
         }

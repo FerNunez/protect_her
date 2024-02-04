@@ -1,15 +1,13 @@
 use rand::{thread_rng, Rng};
 use std::f32::consts::PI;
-use std::ops::Rem;
 use std::time::Duration;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{Enemy, Health, Movable, Player, SpriteScale, SpriteSize, Velocity};
+use crate::components::{Enemy, Health, Movable, Player, SpriteSize, Velocity};
 
-use crate::resources::{EnemyCount, GameState, GameTextures, PlayerState, WinSize};
-use crate::{BASE_SPRITE_SCALE, ENEMY_HEALTH, ENEMY_SIZE};
-use crate::{ENEMY_SPEED, NUM_ENEMIES_MAX};
+use crate::resources::{EnemyCount, GameTextures, PlayerState, WinSize};
+use crate::{NUM_ENEMIES_MAX, SPERM_HEALTH, SPERM_SCALE, SPERM_SIZE, SPERM_SPEED};
 
 pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
@@ -27,7 +25,6 @@ impl Plugin for EnemyPlugin {
 fn enemy_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
-    game_state: Res<GameState>,
     win_size: Res<WinSize>,
     mut enemy_count: ResMut<EnemyCount>,
 ) {
@@ -45,8 +42,8 @@ fn enemy_spawn_system(
             .spawn(SpriteBundle {
                 texture: game_textures.enemy.clone(),
                 transform: Transform::from_xyz(x, y, 0.0).with_scale(Vec3::new(
-                    BASE_SPRITE_SCALE.0 * game_state.zoom,
-                    BASE_SPRITE_SCALE.1 * game_state.zoom,
+                    SPERM_SCALE,
+                    SPERM_SCALE,
                     0.,
                 )),
                 ..Default::default()
@@ -54,9 +51,8 @@ fn enemy_spawn_system(
             .insert(Enemy)
             .insert(Movable)
             .insert(Velocity { x: 0., y: 0. })
-            .insert(SpriteSize::from(ENEMY_SIZE))
-            .insert(SpriteScale::from(BASE_SPRITE_SCALE))
-            .insert(Health(ENEMY_HEALTH));
+            .insert(SpriteSize::from(SPERM_SIZE))
+            .insert(Health(SPERM_HEALTH));
 
         enemy_count.alive += 1;
     }
@@ -73,14 +69,13 @@ fn enemy_target_player(
                 enemy_velocity.x = player_transform.translation.x - enemy_transform.translation.x;
                 enemy_velocity.y = player_transform.translation.y - enemy_transform.translation.y;
                 let speed = bevy::prelude::Vec2::from((enemy_velocity.x, enemy_velocity.y));
-                enemy_velocity.x *= (ENEMY_SPEED / speed.length()) * 0.35;
-                enemy_velocity.y *= ENEMY_SPEED / speed.length() * 0.35;
+                enemy_velocity.x *= (SPERM_SPEED / speed.length()) * 0.35;
+                enemy_velocity.y *= SPERM_SPEED / speed.length() * 0.35;
 
                 let direction_vector = Vec2::new(enemy_velocity.x, -enemy_velocity.y);
                 let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 });
-                let angle_diff = enemy_transform.rotation.z - angle + PI/2.;
 
-                enemy_transform.rotation = Quat::from_rotation_z(angle + PI/2.);
+                enemy_transform.rotation = Quat::from_rotation_z(angle + PI / 2.);
             }
         }
     }
