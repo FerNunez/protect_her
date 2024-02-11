@@ -54,6 +54,8 @@ const SKILL_SPRITE: &str = "TikTok.png";
 const SKILL_SIZE: (f32, f32) = (24., 24.);
 const SKILL_SCALE: f32 = 1.;
 
+const CAMERA_WINDOWS_MARGIN: f32 = 75.;
+
 fn zoom_system(
     game_state: ResMut<GameState>,
     mut camera_query: Query<&mut OrthographicProjection, With<Camera>>,
@@ -63,6 +65,40 @@ fn zoom_system(
     }
 }
 
+fn move_camera_system(
+    win_size: Res<WinSize>,
+    mut camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+    player_query: Query<(&Transform, &SpriteSize), With<Player>>,
+) {
+    if let Ok((player_tf, player_size)) = player_query.get_single() {
+        let player_left = player_tf.translation.x - player_size.0.x * player_tf.scale.x;
+        let player_right = player_tf.translation.x + player_size.0.x * player_tf.scale.x;
+
+        let player_top = player_tf.translation.y + player_size.0.y * player_tf.scale.y;
+        let player_bottom = player_tf.translation.y - player_size.0.y * player_tf.scale.y;
+
+        if let Ok(mut camera_tf) = camera_query.get_single_mut() {
+            let camera_left = camera_tf.translation.x - win_size.w / 2.;
+            let camera_right = camera_tf.translation.x + win_size.w / 2.;
+
+            let camera_top = camera_tf.translation.y + win_size.h / 2.;
+            let camera_bottom = camera_tf.translation.y - win_size.h / 2.;
+
+            if player_left < camera_left + CAMERA_WINDOWS_MARGIN{
+                camera_tf.translation.x -= camera_left+CAMERA_WINDOWS_MARGIN - player_left;
+            }
+            else if  player_right > camera_right - CAMERA_WINDOWS_MARGIN {
+                camera_tf.translation.x -= camera_right-CAMERA_WINDOWS_MARGIN - player_right;
+            }
+            if player_top > camera_top - CAMERA_WINDOWS_MARGIN {
+                camera_tf.translation.y -= camera_top-CAMERA_WINDOWS_MARGIN - player_top;
+            }
+            else if player_bottom < camera_bottom + CAMERA_WINDOWS_MARGIN {
+                camera_tf.translation.y -= camera_bottom+CAMERA_WINDOWS_MARGIN - player_bottom;
+            }
+        }
+    }
+}
 fn user_mouse_handler_zoom_event_system(
     mut scroll_evr: EventReader<MouseWheel>,
     mut game_state: ResMut<GameState>,
@@ -144,9 +180,7 @@ fn setup_system(
     ));
 }
 
-fn movable_system(
-    mut query: Query<(&Velocity, &mut Transform), With<Movable>>,
-) {
+fn movable_system(mut query: Query<(&Velocity, &mut Transform), With<Movable>>) {
     for (velocity, mut transform) in query.iter_mut() {
         let translation = &mut transform.translation;
         translation.x += velocity.x * TIME_STEP * BASE_SPEED;
@@ -384,6 +418,7 @@ fn main() {
             Update,
             (
                 zoom_system,
+                move_camera_system,
                 movable_system,
                 user_mouse_handler_zoom_event_system,
                 player_laser_hit_enemy_system,
