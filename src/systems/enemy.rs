@@ -1,28 +1,7 @@
-use rand::{thread_rng, Rng};
-use std::f32::consts::PI;
-use std::time::Duration;
+use crate::prelude::*;
 
-use bevy::{prelude::*, time::common_conditions::on_timer};
 
-use crate::components::{Enemy, Health, Movable, Player, SpriteSize, Velocity};
-
-use crate::resources::{EnemyCount, GameTextures, PlayerState, WinSize};
-use crate::{NUM_ENEMIES_MAX, SPERM_HEALTH, SPERM_SCALE, SPERM_SIZE, SPERM_SPEED};
-
-pub struct EnemyPlugin;
-impl Plugin for EnemyPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (
-                enemy_spawn_system.run_if(on_timer(Duration::from_secs_f64(1.))),
-                enemy_target_player.run_if(resource_exists::<PlayerState>()),
-            ),
-        );
-    }
-}
-
-fn enemy_spawn_system(
+pub fn enemy_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     win_size: Res<WinSize>,
@@ -58,7 +37,7 @@ fn enemy_spawn_system(
     }
 }
 
-fn enemy_target_player(
+pub fn enemy_target_player(
     player_state: Res<PlayerState>,
     mut enemy_query: Query<(&mut Velocity, &mut Transform), (With<Enemy>, Without<Player>)>,
     player_query: Query<&Transform, With<Player>>,

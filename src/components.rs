@@ -1,4 +1,4 @@
-use bevy::{math::Vec2, prelude::Component};
+use bevy::{math::Vec2, prelude::Component, time::Timer};
 
 #[derive(Component)]
 pub struct Player;
@@ -56,3 +56,17 @@ pub struct WithReloadtime(pub f32);
 
 #[derive(Component)]
 pub struct CoinText;
+
+#[derive(Component)]
+pub struct CanDash;
+
+#[derive(Component)]
+pub struct Dash{
+    //pub start_time: Option<Time>,
+    pub timer: Timer,
+    //pub duration: u32,
+    pub velocity_offset: f32,
+}
+
+#[derive(Component)]
+pub struct WantsToAccelerate(pub f32);
