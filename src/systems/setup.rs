@@ -19,6 +19,7 @@ pub fn setup_system(
         player_laser: asset_server.load(PLAYER_LASER_SPRITE),
         coin: asset_server.load(COIN_SPRITE),
         skill: asset_server.load(SKILL_SPRITE),
+        floor: asset_server.load(FLOOR_SPRITE),
     };
     commands.insert_resource(game_texture);
 
@@ -60,4 +61,6 @@ pub fn setup_system(
         }),
         CoinText,
     ));
+
+    commands.insert_resource(Map::new());
 }

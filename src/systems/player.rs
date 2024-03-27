@@ -211,7 +211,7 @@ pub fn player_spawn_system(
         commands
             .spawn(SpriteBundle {
                 texture: game_textures.player.clone(),
-                transform: Transform::from_xyz(0.0, 0.0, 0.0)
+                transform: Transform::from_xyz(0.0, 0.0, 0.1)
                     .with_scale(Vec3::new(EGG_SCALE, EGG_SCALE, 0.)),
                 ..Default::default()
             })

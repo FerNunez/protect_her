@@ -1,3 +1,10 @@
+mod components;
+mod enemy_builder;
+mod map;
+mod map_builder;
+mod player_builder;
+mod resources;
+mod systems;
 mod prelude {
 
     pub use bevy::{
@@ -11,6 +18,8 @@ mod prelude {
     pub use std::time::Duration;
 
     pub use crate::components::*;
+    pub use crate::map::*;
+    pub use crate::map_builder::*;
     pub use crate::resources::*;
     pub use crate::systems::*;
 
@@ -19,11 +28,14 @@ mod prelude {
     pub const BASE_SPRITE_SCALE: f32 = 1.;
     pub const TIME_STEP: f32 = 1. / 60.;
     pub const BASE_SPEED: f32 = 400.;
-    pub const RESOLUTION: (f32, f32) = (2560., 1440.);
+    pub const SCREEN_SIZE: (i32, i32) = (2560, 1440);
+    pub const MAP_SIZE: (i32, i32) = (1600, 1600);
+    pub const TILE_SIZE: (i32, i32) = (16, 16);
+    pub const TILE_SCALE: i32 = 2;
 
-    pub const EGG_SPRITE: &str = "egg.png";
-    pub const EGG_SIZE: (f32, f32) = (282., 303.);
-    pub const EGG_SCALE: f32 = 0.12;
+    pub const EGG_SPRITE: &str = "egg_32_32.png";
+    pub const EGG_SIZE: (f32, f32) = (32., 32.);
+    pub const EGG_SCALE: f32 = 1.;
 
     pub const SPERM: &str = "sperm.png";
     pub const SPERM_SCALE: f32 = 0.3;
@@ -47,14 +59,10 @@ mod prelude {
     pub const SKILL_SIZE: (f32, f32) = (24., 24.);
     pub const SKILL_SCALE: f32 = 1.;
 
+    pub const FLOOR_SPRITE: &str = "floor.png";
+
     pub const CAMERA_WINDOWS_MARGIN: f32 = 75.;
 }
-
-mod components;
-mod enemy_builder;
-mod player_builder;
-mod resources;
-mod systems;
 
 use crate::systems::camera::*;
 use crate::systems::setup::*;
@@ -67,9 +75,9 @@ use crate::systems::player::*;
 use crate::systems::skill::*;
 use crate::systems::ui::*;
 
-
 use crate::enemy_builder::*;
 use crate::player_builder::*;
+use prelude::map_render::render_map_system;
 use prelude::*;
 
 fn main() {
@@ -83,29 +91,31 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Protect her!".to_string(),
-                resolution: (RESOLUTION.0 / 2., RESOLUTION.1 / 2.).into(),
-                position: WindowPosition::At(IVec2::new(0, 0)),
+                resolution: (SCREEN_SIZE.0 as f32 / 2., SCREEN_SIZE.1 as f32 / 2.).into(),
+                position: WindowPosition::At(IVec2::new(10, 10)),
+
                 ..default()
             }),
             ..default()
         }))
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
-        .add_systems(Startup, setup_system)
+        .add_systems(PreStartup, setup_system)
+        .add_systems(Startup, render_map_system)
         .add_systems(
             Update,
             (
-                zoom_system,
+                //zoom_system,
                 move_camera_system,
                 movable_system,
-                user_mouse_handler_zoom_event_system,
-                player_laser_hit_enemy_system,
-                animate_being_hitted,
-                spawn_coin_system,
-                player_pickup_coin_system,
-                spawn_skill_system,
-                player_pickup_skill_system,
-                text_update_system,
+                //user_mouse_handler_zoom_event_system,
+                //player_laser_hit_enemy_system,
+                //animate_being_hitted,
+                //spawn_coin_system,
+                //player_pickup_coin_system,
+                //spawn_skill_system,
+                //player_pickup_skill_system,
+                //text_update_system,
             ),
         )
         .run();

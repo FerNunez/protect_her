@@ -20,6 +20,7 @@ pub struct GameTextures {
     pub player_laser: Handle<Image>,
     pub coin: Handle<Image>,
     pub skill: Handle<Image>,
+    pub floor: Handle<Image>,
 }
 
 #[derive(Resource)]

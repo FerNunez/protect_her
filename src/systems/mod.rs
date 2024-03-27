@@ -1,10 +1,11 @@
+pub mod animation;
 pub mod camera;
 pub mod cinematics;
 pub mod coin;
 pub mod enemy;
-pub mod skill;
-pub mod ui;
 pub mod input_handler;
-pub mod animation;
+pub mod map_render;
 pub mod player;
 pub mod setup;
+pub mod skill;
+pub mod ui;
