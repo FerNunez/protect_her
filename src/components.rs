@@ -1,4 +1,4 @@
-use bevy::{math::Vec2, prelude::Component, time::Timer};
+use bevy::{ecs::entity::Entity, math::Vec2, prelude::Component, time::Timer};
 
 #[derive(Component)]
 pub struct Player;
@@ -61,7 +61,7 @@ pub struct CoinText;
 pub struct CanDash;
 
 #[derive(Component)]
-pub struct Dash{
+pub struct Dash {
     //pub start_time: Option<Time>,
     pub timer: Timer,
     //pub duration: u32,
@@ -70,3 +70,18 @@ pub struct Dash{
 
 #[derive(Component)]
 pub struct WantsToAccelerate(pub f32);
+
+#[derive(Component)]
+pub struct WantsToMove {
+    pub entity: Entity,
+    pub destination: Vec2,
+}
+
+#[derive(Component)]
+pub struct WantsToRotate {
+    pub entity: Entity,
+    pub angle: f32,
+}
+
+#[derive(Component)]
+pub struct AskingToMove;

@@ -5,10 +5,7 @@
 //use bevy::window::PrimaryWindow;
 //use bevy::{prelude::*, time::common_conditions::on_timer};
 
-
 use crate::prelude::*;
-
-
 
 pub fn player_fire_system(
     mut commands: Commands,
@@ -211,8 +208,12 @@ pub fn player_spawn_system(
         commands
             .spawn(SpriteBundle {
                 texture: game_textures.player.clone(),
-                transform: Transform::from_xyz(0.0, 0.0, 0.1)
-                    .with_scale(Vec3::new(EGG_SCALE, EGG_SCALE, 0.)),
+                transform: Transform::from_xyz(
+                    (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0 / 2) as f32,
+                    (MAP_SIZE_IN_TILES.1 * TILE_SIZE.1 / 2) as f32,
+                    1.0,
+                )
+                .with_scale(Vec3::new(EGG_SCALE, EGG_SCALE, 0.)),
                 ..Default::default()
             })
             .insert(Player)
@@ -225,10 +226,21 @@ pub fn player_spawn_system(
 }
 
 pub fn player_keyboard_event_system(
+    mut commands: Commands,
     kboard: Res<Input<KeyCode>>,
-    mut query: Query<&mut Velocity, With<Player>>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut Velocity),
+        (With<Player>, Without<AskingToMove>),
+    >,
+    // whitout Asklign Move
 ) {
-    if let Ok(mut velocity) = query.get_single_mut() {
+    if let Ok((entity, transform, mut velocity)) = query.get_single_mut() {
+        //println!("calling player keyboard");
+        //println!(
+        //    "player pos: {},{}",
+        //    transform.translation.x, transform.translation.y
+        //);
+        let angle = 0.01;
         velocity.x = if kboard.pressed(KeyCode::Q) {
             -1.
         } else if kboard.pressed(KeyCode::D) {
@@ -244,6 +256,36 @@ pub fn player_keyboard_event_system(
         } else {
             0.
         };
+
+        let delta = Vec2::new(
+            velocity.x * TIME_STEP * BASE_SPEED,
+            velocity.y * TIME_STEP * BASE_SPEED,
+        );
+        //println!("x,y: {},{}", delta.x, delta.y);
+        //println!(
+        //    "current pos: {},{}",
+        //    transform.translation.x, transform.translation.y
+        //);
+
+        if delta.x != 0. || delta.y != 0. {
+            let destination = Vec2::new(
+                transform.translation.x + delta.x,
+                transform.translation.y + delta.y,
+            );
+
+            //println!(
+            //    " adding wantstomove: {entity:?} destination: {},{}",
+            //    destination.x, destination.y
+            //);
+            commands.spawn(WantsToMove {
+                entity,
+                destination,
+            });
+
+            commands.entity(entity).insert(AskingToMove);
+        }
+
+        commands.spawn(WantsToRotate { entity, angle });
     }
 }
 

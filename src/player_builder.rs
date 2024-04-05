@@ -26,10 +26,10 @@ impl Plugin for PlayerPlugin {
             Update,
             (
                 player_spawn_system.run_if(on_timer(Duration::from_secs_f64(0.1))),
-                player_keyboard_event_system,
-                player_fire_system,
-                player_keyboard_dash_system,
-                player_dash_system,
+                //player_keyboard_event_system,
+                //player_fire_system,
+                //player_keyboard_dash_system,
+                //player_dash_system,
             ),
         );
     }

@@ -8,7 +8,7 @@ impl Plugin for EnemyPlugin {
             Update,
             (
                 enemy_spawn_system.run_if(on_timer(Duration::from_secs_f64(1.))),
-                enemy_target_player.run_if(resource_exists::<PlayerState>()),
+                //enemy_target_player.run_if(resource_exists::<PlayerState>()),
             ),
         );
     }

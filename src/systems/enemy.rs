@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-
 pub fn enemy_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
@@ -38,23 +37,45 @@ pub fn enemy_spawn_system(
 }
 
 pub fn enemy_target_player(
+    mut commands: Commands,
     player_state: Res<PlayerState>,
-    mut enemy_query: Query<(&mut Velocity, &mut Transform), (With<Enemy>, Without<Player>)>,
+    mut enemy_query: Query<(Entity, &mut Velocity, &mut Transform), (With<Enemy>, Without<Player>)>,
     player_query: Query<&Transform, With<Player>>,
 ) {
     if player_state.alive {
         if let Ok(player_transform) = player_query.get_single() {
-            for (mut enemy_velocity, mut enemy_transform) in enemy_query.iter_mut() {
-                enemy_velocity.x = player_transform.translation.x - enemy_transform.translation.x;
-                enemy_velocity.y = player_transform.translation.y - enemy_transform.translation.y;
-                let speed = bevy::prelude::Vec2::from((enemy_velocity.x, enemy_velocity.y));
-                enemy_velocity.x *= (SPERM_SPEED / speed.length()) * 0.35;
-                enemy_velocity.y *= SPERM_SPEED / speed.length() * 0.35;
+            for (enemy_entity, mut enemy_velocity, mut enemy_transform) in enemy_query.iter_mut() {
+                let direction_vector = Vec2::new(
+                    player_transform.translation.x - enemy_transform.translation.x,
+                    -(player_transform.translation.y - enemy_transform.translation.y),
+                );
 
-                let direction_vector = Vec2::new(enemy_velocity.x, -enemy_velocity.y);
-                let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 });
+                enemy_velocity.x = (direction_vector.x / direction_vector.length()) * SPERM_SPEED;
+                enemy_velocity.y = (direction_vector.y / direction_vector.length()) * SPERM_SPEED;
 
-                enemy_transform.rotation = Quat::from_rotation_z(angle + PI / 2.);
+                let delta = Vec2::new(
+                    enemy_velocity.x * TIME_STEP * BASE_SPEED,
+                    enemy_velocity.y * TIME_STEP * BASE_SPEED,
+                );
+
+                if delta.x != 0. || delta.y != 0. {
+                    let destination = Vec2::new(
+                        enemy_transform.translation.x + delta.x,
+                        enemy_transform.translation.y + delta.y,
+                    );
+
+                    commands.spawn(WantsToMove {
+                        entity: enemy_entity,
+                        destination,
+                    });
+                }
+
+                let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 }) + PI / 2.;
+                //enemy_transform.rotation = Quat::from_rotation_z(angle );
+                commands.spawn(WantsToRotate {
+                    entity: enemy_entity,
+                    angle,
+                });
             }
         }
     }

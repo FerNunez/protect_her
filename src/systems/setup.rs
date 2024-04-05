@@ -5,7 +5,15 @@ pub fn setup_system(
     asset_server: Res<AssetServer>,
     windows_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    commands.spawn(Camera2dBundle::default());
+    //commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle {
+        transform: Transform::from_xyz(
+            (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0 / 2) as f32,
+            (MAP_SIZE_IN_TILES.1 * TILE_SIZE.1 / 2) as f32,
+            3.0,
+        ),
+        ..Default::default()
+    });
 
     let window = windows_query.get_single().unwrap();
     let (win_w, win_h) = (window.resolution.width(), window.resolution.height());
@@ -20,6 +28,8 @@ pub fn setup_system(
         coin: asset_server.load(COIN_SPRITE),
         skill: asset_server.load(SKILL_SPRITE),
         floor: asset_server.load(FLOOR_SPRITE),
+        wall: asset_server.load(WALL_SPRITE),
+        pixel: asset_server.load("pixel_debug.png"),
     };
     commands.insert_resource(game_texture);
 
@@ -62,5 +72,6 @@ pub fn setup_system(
         CoinText,
     ));
 
-    commands.insert_resource(Map::new());
+    let map_builder = MapBuilder::new();
+    commands.insert_resource(map_builder.map);
 }
