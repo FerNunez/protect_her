@@ -1,4 +1,13 @@
 use crate::prelude::*;
+pub fn load_map_sprite_tileset(
+        mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,){
+
+    //let texture = asset_server.load("textures/rpg/chars/gabe/gabe-idle-run.png");
+    //let layout = TextureAtlasLayout::from_grid(Vec2::new(24.0, 24.0), 7, 1, None, None);
+    //let texture_atlas_layout = texture_atlas_layouts.add(layout);  
+}
 
 pub fn setup_system(
     mut commands: Commands,
@@ -45,33 +54,33 @@ pub fn setup_system(
     });
     commands.insert_resource(AtomaticPlayerSkillList(Vec::new()));
 
-    commands.spawn((
-        TextBundle::from_sections([
-            TextSection::new(
-                "Coins ",
-                TextStyle {
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                    font_size: 50.,
-                    ..default()
-                },
-            ),
-            TextSection::from_style(TextStyle {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                font_size: 50.,
-                color: Color::GOLD,
-                ..default()
-            }),
-        ])
-        .with_text_alignment(TextAlignment::Center)
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(5.0),
-            right: Val::Px(5.0),
-            ..default()
-        }),
-        CoinText,
-    ));
-
+//    commands.spawn((
+//        TextBundle::from_sections([
+//            TextSection::new(
+//                "Coins ",
+//                TextStyle {
+//                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+//                    font_size: 50.,
+//                    ..default()
+//                },
+//            ),
+//            TextSection::from_style(TextStyle {
+//                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+//                font_size: 50.,
+//                color: Color::GOLD,
+//                ..default()
+//            }),
+//        ])
+//        .with_text_alignment(TextAlignment::Center)
+//        .with_style(Style {
+//            position_type: PositionType::Absolute,
+//            bottom: Val::Px(5.0),
+//            right: Val::Px(5.0),
+//            ..default()
+//        }),
+//        CoinText,
+//    ));
+//
     let map_builder = MapBuilder::new();
     commands.insert_resource(map_builder.map);
 }

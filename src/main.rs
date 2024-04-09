@@ -8,9 +8,9 @@ mod systems;
 mod prelude {
 
     pub use bevy::{
-        animation::prelude, input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*,
-        sprite::collide_aabb::collide, time::common_conditions::on_timer, utils::HashSet,
-        window::PrimaryWindow,
+       input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*,
+        time::common_conditions::on_timer, utils::HashSet,
+        window::PrimaryWindow, 
     };
 
     pub use rand::{thread_rng, Rng};
@@ -23,7 +23,8 @@ mod prelude {
     pub use crate::resources::*;
     pub use crate::systems::*;
 
-    pub const NUM_ENEMIES_MAX: u32 = 1000;
+    pub const NUM_ENEMIES_MAX: u32 = 10000;
+    pub const ENEMY_SPAWN_RATE_PER_MIN: f32 = 10.;
 
     pub const BASE_SPRITE_SCALE: f32 = 1.;
     pub const TIME_STEP: f32 = 1. / 60.;
@@ -33,21 +34,27 @@ mod prelude {
     pub const TILE_SIZE: (i32, i32) = (32, 32);
     pub const TILE_SCALE: i32 = 1;
 
-    pub const EGG_SPRITE: &str = "egg_new_32_32_debug.png";
+    pub const EGG_SPRITE: &str = "egg_new_26_26.png";
     pub const EGG_SIZE: (f32, f32) = (32., 32.);
     pub const EGG_SCALE: f32 = 1.;
 
-    pub const SPERM: &str = "sperm.png";
-    pub const SPERM_SCALE: f32 = 0.3;
+    pub const SPERM: &str = "sperm_only_head.png";
+    pub const SPERM_SCALE: f32 = 1.;
     pub const SPERM_SPEED: f32 = 0.15;
-    pub const SPERM_SIZE: (f32, f32) = (144., 75.0);
+    pub const SPERM_SIZE: (f32, f32) = (12., 8.0);
     pub const SPERM_HEALTH: f32 = 10.;
 
-    pub const PLAYER_LASER_SPRITE: &str = "laser_b_01.png";
-    pub const PLAYER_LASER_SIZE: (f32, f32) = (17., 55.);
+    //pub const SPERM: &str = "sperm_32_32.png";
+    //pub const SPERM_SCALE: f32 = 1.;
+    //pub const SPERM_SPEED: f32 = 0.15;
+    //pub const SPERM_SIZE: (f32, f32) = (144., 75.0);
+    //pub const SPERM_HEALTH: f32 = 10.;
+
+    pub const PLAYER_LASER_SPRITE: &str = "laser_blue_18_32.png";
+    pub const PLAYER_LASER_SIZE: (f32, f32) = (18., 32.);
     pub const PLAYER_LASER_SPEED: f32 = 1.3;
     pub const PLAYER_DAMAGE: f32 = 2.;
-    pub const PLAYER_LASER_SCALE: f32 = 0.4;
+    pub const PLAYER_LASER_SCALE: f32 = 1.;
 
     pub const FRAMES_HITTED: u16 = 10;
 
@@ -59,8 +66,8 @@ mod prelude {
     pub const SKILL_SIZE: (f32, f32) = (24., 24.);
     pub const SKILL_SCALE: f32 = 1.;
 
-    pub const FLOOR_SPRITE: &str = "floor.png";
-    pub const WALL_SPRITE: &str = "wall.png";
+    pub const FLOOR_SPRITE: &str = "floor_pattern_dark.png";
+    pub const WALL_SPRITE: &str = "wall_lava_test.png";
 
     pub const CAMERA_WINDOWS_MARGIN: f32 = 275.;
 }
@@ -79,6 +86,8 @@ use crate::systems::ui::*;
 use crate::enemy_builder::*;
 use crate::player_builder::*;
 use prelude::map_render::render_map_system;
+use prelude::projectile::despawn_projectile_system;
+use prelude::projectile::projectile_movement_system;
 use prelude::*;
 
 fn main() {
@@ -93,9 +102,8 @@ fn main() {
             primary_window: Some(Window {
                 title: "Protect her!".to_string(),
                 resolution: (SCREEN_SIZE.0 as f32 / 2., SCREEN_SIZE.1 as f32 / 2.).into(),
-                position: WindowPosition::At(IVec2::new(2*SCREEN_SIZE.1 + 10, 10)),
-                //position: WindowPosition::At(IVec2::new(10, 10)),
-
+                //position: WindowPosition::At(IVec2::new(2 * SCREEN_SIZE.1 + 10, 10)),
+                position: WindowPosition::At(IVec2::new(10, 10)),
                 ..default()
             }),
             ..default()
@@ -104,12 +112,13 @@ fn main() {
         .add_plugins(EnemyPlugin)
         .add_systems(PreStartup, setup_system)
         .add_systems(Startup, render_map_system)
+        .add_systems(PreUpdate, despawn_projectile_system)
         .add_systems(
             Update,
             (
                 //zoom_system,
-                player_keyboard_event_system,
                 move_camera_system,
+                projectile_movement_system,
                 //user_mouse_handler_zoom_event_system,
                 //player_laser_hit_enemy_system,
                 //animate_being_hitted,
@@ -120,6 +129,12 @@ fn main() {
                 //text_update_system,
             ),
         )
-        .add_systems(PostUpdate, movable_system.after(player_keyboard_event_system))
+        .add_systems(
+            PostUpdate,
+            (
+                movable_system.after(player_keyboard_event_system),
+                rotable_system,
+            ),
+        )
         .run();
 }

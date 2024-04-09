@@ -19,7 +19,7 @@ pub struct Movable;
 pub struct FromPlayer;
 
 #[derive(Component)]
-pub struct Laser;
+pub struct Projectile;
 
 #[derive(Component)]
 pub struct SpriteSize(pub Vec2);
@@ -85,3 +85,25 @@ pub struct WantsToRotate {
 
 #[derive(Component)]
 pub struct AskingToMove;
+
+#[derive(Component)]
+pub struct AskingToRotate;
+
+#[derive(Component)]
+pub struct WantsToMoveInDirecion{
+    pub entity: Entity,
+}
+
+#[derive(Component)]
+pub struct CanWallRide;
+
+
+#[derive(Component)]
+pub struct Collide{
+    pub from: Entity,
+    pub to: Entity,
+    pub pos: Vec2,
+}
+
+#[derive(Component)]
+pub struct HasCollided;

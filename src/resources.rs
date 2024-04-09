@@ -1,4 +1,7 @@
-use bevy::{prelude::{Handle, Image, Resource}, time::Timer};
+use bevy::{
+    prelude::{Handle, Image, Resource},
+    time::Timer,
+};
 
 // Resources
 #[derive(Resource)]
@@ -24,6 +27,7 @@ pub struct GameTextures {
     pub wall: Handle<Image>,
     // debug
     pub pixel: Handle<Image>,
+    //pub map_atlas: Handle<TextureAtlasLayout>,
 }
 
 #[derive(Resource)]
@@ -39,9 +43,9 @@ pub struct EnemyCount {
 
 #[derive(Resource)]
 pub struct PlayerSkill {
-    pub timer: Timer, 
+    pub timer: Timer,
 }
-
 
 #[derive(Resource)]
 pub struct AtomaticPlayerSkillList(pub Vec<PlayerSkill>);
+

@@ -2,8 +2,8 @@ use crate::prelude::*;
 
 use super::super::map::NUM_TILES;
 
-const STAGGER_DISTANCE: usize = 400;
-const DESIRED_NUMBER_FLOOR: usize = NUM_TILES as usize / 5;
+const STAGGER_DISTANCE: usize = 1000;
+const DESIRED_NUMBER_FLOOR: usize = NUM_TILES as usize / 3;
 
 use super::MapArchitect;
 
@@ -42,7 +42,7 @@ impl MapArchitect for DrunkardsWalkArchitect {
 impl DrunkardsWalkArchitect {
     fn drunkard(&mut self, start: &IVec2, map: &mut Map) {
         let mut drunkard_position = start.clone();
-        let mut distnace_staggered = 0;
+        let mut distance_staggered = 0;
         let mut rng = thread_rng();
 
         loop {
@@ -61,8 +61,8 @@ impl DrunkardsWalkArchitect {
                 break;
             }
 
-            distnace_staggered += 1;
-            if distnace_staggered > STAGGER_DISTANCE {
+            distance_staggered += 1;
+            if distance_staggered > STAGGER_DISTANCE {
                 break;
             }
         }

@@ -33,19 +33,19 @@ impl Map {
 
     pub fn tile_can_enter_tile(&self, pos: &Vec2) -> bool {
 
-        info!("pos: {pos:?}");
+       // let gap = 26./2.;
+       // self.in_bound(&pos)
+       //     && self.tiles[pos_to_map_idx(pos.x - gap, pos.y - gap)] == TilesType::Floor
+       //     && self.tiles[pos_to_map_idx(pos.x - gap, pos.y + gap)] == TilesType::Floor
+       //     && self.tiles[pos_to_map_idx(pos.x + gap, pos.y - gap)] == TilesType::Floor
+       //     && self.tiles[pos_to_map_idx(pos.x + gap, pos.y + gap)] == TilesType::Floor
+
+            // declaed to right
         self.in_bound(&pos)
-            //&& self.tiles[pos_to_map_idx(pos.x, pos.y)] == TilesType::Floor
-            && self.tiles[pos_to_map_idx(pos.x + TILE_SIZE.0 as f32, pos.y)] == TilesType::Floor
-            //&& self.tiles[pos_to_map_idx(pos.x, pos.y + TILE_SIZE.1 as f32)] == TilesType::Floor
-            //&& self.tiles[pos_to_map_idx(pos.x + TILE_SIZE.0 as f32, pos.y + TILE_SIZE.1 as f32)]
-            //    == TilesType::Floor
-        //let (border_x, border_y) = (TILE_SIZE.0 as f32 / 2., TILE_SIZE.1 as f32 / 2.);
-        //self.in_bound(&pos)
-        //    && self.tiles[pos_to_map_idx(pos.x - border_x, pos.y + border_y)] == TilesType::Floor
-        //    && self.tiles[pos_to_map_idx(pos.x + border_x, pos.y + border_y)] == TilesType::Floor
-        //    && self.tiles[pos_to_map_idx(pos.x - border_x, pos.y - border_y)] == TilesType::Floor
-        //    && self.tiles[pos_to_map_idx(pos.x + border_x, pos.y - border_y)] == TilesType::Floor
+            && self.tiles[pos_to_map_idx(pos.x, pos.y)] == TilesType::Floor
+            && self.tiles[pos_to_map_idx(pos.x + 26., pos.y)] == TilesType::Floor
+            && self.tiles[pos_to_map_idx(pos.x, pos.y + 26.)] == TilesType::Floor
+            && self.tiles[pos_to_map_idx(pos.x + 26., pos.y + 26.)] == TilesType::Floor
     }
 }
 pub fn pos_to_map_idx(x: f32, y: f32) -> usize {
