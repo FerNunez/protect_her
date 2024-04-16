@@ -7,6 +7,7 @@ impl Plugin for EnemyPlugin {
         app.add_systems(
             Update,
             (
+                //TODO: make this change in time
                 enemy_spawn_system.run_if(on_timer(Duration::from_secs_f32(
                     1. / ENEMY_SPAWN_RATE_PER_MIN,
                 ))),

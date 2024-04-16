@@ -25,18 +25,27 @@ pub fn player_fire_system(
         // get vector velocity
         if let Ok(camera_tf) = camera_query.get_single() {
             let mouse_position_from_window = window_query.single().cursor_position();
+            //info!("mouse pos from window: {:?}", mouse_position_from_window);
 
             let (velocity, angle) = match mouse_position_from_window {
                 Some(mouse_position_from_window) => {
-                    let mouse_position_from_map = mouse_position_from_window
-                        + camera_tf.translation.xy()
-                        - Vec2::new(win_size.w / 2., win_size.h / 2.);
-
-                    // here remeber that position of player Y is positive going down
-                    let direction_vector = Vec2::new(
-                        mouse_position_from_map.x - player_position.x,
-                        mouse_position_from_map.y - player_position.y,
+                    // mouse pos from window frame (inverted y) to map frame
+                    let mouse_pos_from_camera = Vec2::new(
+                        mouse_position_from_window.x,
+                        win_size.h - mouse_position_from_window.y,
                     );
+                    let win_size_gap = Vec2::new(win_size.w / 2., win_size.h / 2.);
+                    let camera_pos = Vec2::new(camera_tf.translation.x, camera_tf.translation.y);
+                    let camera_corner_pos = camera_pos - win_size_gap/2.;
+                    let mouse_pos_from_origin = camera_corner_pos + mouse_pos_from_camera;
+                    //let mouse_position_from_map = mouse_position_from_window + camera_pos + win_size_gap;
+
+                    //info!("mouse pos xy: {:?}", mouse_pos);
+                    //info!("camera_pos xy: {:?}", camera_pos);
+                    // info!("win_sizes: {:?}", win_size_gap);
+                    //info!("player pos xy: {:?}", player_position);
+                    // here remeber that position of player Y is positive going down
+                    let direction_vector = mouse_pos_from_origin - player_position.xy();
 
                     let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 });
 
@@ -55,11 +64,10 @@ pub fn player_fire_system(
             // with key
             if mouse_button.pressed(MouseButton::Left) {
                 // probably set here a OPP? single call
-
                 player_skill.timer.tick(time.delta());
                 if player_skill.timer.finished() {
                     player_skill.timer.reset();
-                    let spawned_laser = commands
+                    commands
                         .spawn(SpriteBundle {
                             texture: game_textures.player_laser.clone(),
                             // TODO: player_y as a part of the SPRITE?
@@ -77,8 +85,7 @@ pub fn player_fire_system(
                         .insert(FromPlayer)
                         .insert(Projectile)
                         .insert(Damage(PLAYER_DAMAGE))
-                        .insert(SpriteSize::from(PLAYER_LASER_SIZE))
-                        .id();
+                        .insert(SpriteSize::from(PLAYER_LASER_SIZE));
                 }
             }
         }
@@ -174,6 +181,7 @@ pub fn player_laser_hit_enemy_system(
                 continue;
             }
 
+            // TODO: why/4
             let laser_aabb2d = Aabb2d::new(laser_tf.translation.xy(), laser_size.0 / 2.);
             let bounding_circle =
                 BoundingCircle::new(enemy_tf.translation.xy(), enemy_size.0.x / 4.);

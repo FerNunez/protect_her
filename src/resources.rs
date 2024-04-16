@@ -1,6 +1,6 @@
 use bevy::{
     prelude::{Handle, Image, Resource},
-    time::Timer,
+    time::Timer, sprite::TextureAtlasLayout,
 };
 
 // Resources
@@ -27,8 +27,14 @@ pub struct GameTextures {
     pub wall: Handle<Image>,
     // debug
     pub pixel: Handle<Image>,
-    //pub map_atlas: Handle<TextureAtlasLayout>,
+    pub map_texture: Handle<Image>,
 }
+
+#[derive(Resource)]
+pub struct GameAtlases {
+    pub map_texture: Handle<TextureAtlasLayout>,
+}
+
 
 #[derive(Resource)]
 pub struct PlayerState {
@@ -48,4 +54,3 @@ pub struct PlayerSkill {
 
 #[derive(Resource)]
 pub struct AtomaticPlayerSkillList(pub Vec<PlayerSkill>);
-

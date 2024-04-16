@@ -1,8 +1,10 @@
 use crate::prelude::*;
 
-use self::drunkards::DrunkardsWalkArchitect;
 mod drunkards;
+mod empty;
 
+use self::drunkards::DrunkardsWalkArchitect;
+use self::empty::EmptyArchitect;
 trait MapArchitect {
     fn new(&mut self) -> MapBuilder;
 }
@@ -14,6 +16,7 @@ pub struct MapBuilder {
 impl MapBuilder {
     pub fn new() -> Self {
         let mut architect = DrunkardsWalkArchitect {};
+        //let mut architect = EmptyArchitect {};
         architect.new()
     }
 

@@ -1,17 +1,10 @@
 use crate::prelude::*;
-pub fn load_map_sprite_tileset(
-        mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,){
 
-    //let texture = asset_server.load("textures/rpg/chars/gabe/gabe-idle-run.png");
-    //let layout = TextureAtlasLayout::from_grid(Vec2::new(24.0, 24.0), 7, 1, None, None);
-    //let texture_atlas_layout = texture_atlas_layouts.add(layout);  
-}
 
 pub fn setup_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     windows_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     //commands.spawn(Camera2dBundle::default());
@@ -23,6 +16,11 @@ pub fn setup_system(
         ),
         ..Default::default()
     });
+
+
+    let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 11, 11, None, None);
+    let texutre_atlas_layout = texture_atlases.add(layout.clone());
+
 
     let window = windows_query.get_single().unwrap();
     let (win_w, win_h) = (window.resolution.width(), window.resolution.height());
@@ -39,8 +37,15 @@ pub fn setup_system(
         floor: asset_server.load(FLOOR_SPRITE),
         wall: asset_server.load(WALL_SPRITE),
         pixel: asset_server.load("pixel_debug.png"),
+        map_texture: asset_server.load("map_edit.png"),
     };
     commands.insert_resource(game_texture);
+
+    let game_atlases = GameAtlases{
+        map_texture: texutre_atlas_layout,
+    };
+    commands.insert_resource(game_atlases);
+
 
     commands.insert_resource(PlayerState::default());
 
@@ -54,33 +59,33 @@ pub fn setup_system(
     });
     commands.insert_resource(AtomaticPlayerSkillList(Vec::new()));
 
-//    commands.spawn((
-//        TextBundle::from_sections([
-//            TextSection::new(
-//                "Coins ",
-//                TextStyle {
-//                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-//                    font_size: 50.,
-//                    ..default()
-//                },
-//            ),
-//            TextSection::from_style(TextStyle {
-//                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-//                font_size: 50.,
-//                color: Color::GOLD,
-//                ..default()
-//            }),
-//        ])
-//        .with_text_alignment(TextAlignment::Center)
-//        .with_style(Style {
-//            position_type: PositionType::Absolute,
-//            bottom: Val::Px(5.0),
-//            right: Val::Px(5.0),
-//            ..default()
-//        }),
-//        CoinText,
-//    ));
-//
+    //    commands.spawn((
+    //        TextBundle::from_sections([
+    //            TextSection::new(
+    //                "Coins ",
+    //                TextStyle {
+    //                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+    //                    font_size: 50.,
+    //                    ..default()
+    //                },
+    //            ),
+    //            TextSection::from_style(TextStyle {
+    //                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+    //                font_size: 50.,
+    //                color: Color::GOLD,
+    //                ..default()
+    //            }),
+    //        ])
+    //        .with_text_alignment(TextAlignment::Center)
+    //        .with_style(Style {
+    //            position_type: PositionType::Absolute,
+    //            bottom: Val::Px(5.0),
+    //            right: Val::Px(5.0),
+    //            ..default()
+    //        }),
+    //        CoinText,
+    //    ));
+    //
     let map_builder = MapBuilder::new();
     commands.insert_resource(map_builder.map);
 }

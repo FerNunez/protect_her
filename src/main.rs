@@ -8,9 +8,8 @@ mod systems;
 mod prelude {
 
     pub use bevy::{
-       input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*,
-        time::common_conditions::on_timer, utils::HashSet,
-        window::PrimaryWindow, 
+        input::mouse::MouseWheel, math::Vec3Swizzles, prelude::*,
+        time::common_conditions::on_timer, utils::HashSet, window::PrimaryWindow,
     };
 
     pub use rand::{thread_rng, Rng};
@@ -26,7 +25,6 @@ mod prelude {
     pub const NUM_ENEMIES_MAX: u32 = 10000;
     pub const ENEMY_SPAWN_RATE_PER_MIN: f32 = 10.;
 
-    pub const BASE_SPRITE_SCALE: f32 = 1.;
     pub const TIME_STEP: f32 = 1. / 60.;
     pub const BASE_SPEED: f32 = 300.;
     pub const SCREEN_SIZE: (i32, i32) = (2560, 1440);
@@ -67,7 +65,7 @@ mod prelude {
     pub const SKILL_SCALE: f32 = 1.;
 
     pub const FLOOR_SPRITE: &str = "floor_pattern_dark.png";
-    pub const WALL_SPRITE: &str = "wall_lava_test.png";
+    pub const WALL_SPRITE: &str = "map_edit.png";
 
     pub const CAMERA_WINDOWS_MARGIN: f32 = 275.;
 }
