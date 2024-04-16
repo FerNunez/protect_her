@@ -8,23 +8,24 @@ pub fn movable_system(
     query_velocity: Query<&Velocity>,
     query_wall_ride: Query<&CanWallRide>,
     query_has_collided: Query<&HasCollided>,
+    query_can_fly: Query<&CanFly>,
 ) {
     //println!("calling movable_system");
     for (entity, wants_to_move) in query_wants_to_move.iter() {
         let transform = query_transform.get_mut(wants_to_move.entity);
         let velocity = query_velocity.get(wants_to_move.entity);
-        //let _can_wall_ride = query_wall_ride.get_component::<CanWallRide>(wants_to_move.entity);
+        //let _can_wall_ride = query_wall_ride.get_comonent::<CanWallRide>(wants_to_move.entity);
+        let can_fly = query_can_fly.get(wants_to_move.entity);
         let player_entity = wants_to_move.entity;
 
         if let Ok(mut transform) = transform {
             if map.in_bound(&wants_to_move.destination)
-                && map.tile_can_enter_tile(&wants_to_move.destination)
+                && (map.tile_can_enter_tile(&wants_to_move.destination) || can_fly.is_ok())
             {
                 transform.translation.x = wants_to_move.destination.x;
                 transform.translation.y = wants_to_move.destination.y;
             } else {
-                let has_collided_already =
-                    query_has_collided.get(wants_to_move.entity);
+                let has_collided_already = query_has_collided.get(wants_to_move.entity);
 
                 if has_collided_already.is_err() {
                     commands.spawn(Collide {
@@ -32,7 +33,7 @@ pub fn movable_system(
                         to: wants_to_move.entity,
                         pos: wants_to_move.destination,
                     });
-                    commands.entity(wants_to_move.entity).insert(HasCollided{});
+                    commands.entity(wants_to_move.entity).insert(HasCollided {});
                 }
 
                 if let Ok(velocity) = velocity {

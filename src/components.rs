@@ -107,3 +107,6 @@ pub struct Collide{
 
 #[derive(Component)]
 pub struct HasCollided;
+
+#[derive(Component)]
+pub struct CanFly;

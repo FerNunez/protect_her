@@ -230,7 +230,7 @@ pub fn render_map_system(
                                     && !lava_vecinities.contains(&LavaVecinity::W)
                                 {
                                     index = 11 * 2 + 1;
-                                }else if lava_vecinities.contains(&LavaVecinity::E)
+                                } else if lava_vecinities.contains(&LavaVecinity::E)
                                     && lava_vecinities.contains(&LavaVecinity::W)
                                     && !lava_vecinities.contains(&LavaVecinity::N)
                                 {
@@ -366,22 +366,16 @@ pub fn render_map_system(
 
 fn get_lava_vecinities(map: &Map, tile_pos: &IVec2) -> Option<HashSet<LavaVecinity>> {
     let mut lava_vecinity_hash: HashSet<LavaVecinity> = HashSet::new();
-    match map.tiles[tile_xy_to_map_idx(tile_pos.x, tile_pos.y)] {
-        TilesType::Wall => info!("Wall ar position: {:?}", tile_pos),
-        TilesType::Floor => info!("Floor at position: {:?}", tile_pos),
-    }
 
     for i in -1..=1 {
         for j in -1..=1 {
             let tuple = (i, j);
             let position = IVec2::new(tile_pos.x + i, tile_pos.y + j);
-            info!("{position:?}");
 
             if map.tile_in_bound(&position) {
                 let tile_type = map.tiles[tile_xy_to_map_idx(position.x, position.y)];
 
                 if tile_type == TilesType::Wall {
-                    info!("TilesType::Wall");
                     match tuple {
                         (-1, 1) => {
                             lava_vecinity_hash.insert(LavaVecinity::NW);
@@ -409,11 +403,7 @@ fn get_lava_vecinities(map: &Map, tile_pos: &IVec2) -> Option<HashSet<LavaVecini
                         }
                         (_, _) => (),
                     }
-                } else {
-                    info!("TilesType::Floor");
                 }
-            } else {
-                info!("Outbound");
             }
         }
     }
@@ -425,6 +415,3 @@ fn get_lava_vecinities(map: &Map, tile_pos: &IVec2) -> Option<HashSet<LavaVecini
     }
 }
 
-fn get_floor_tile_from_lava_vecitity(lava_vecinity: &Option<HashSet<LavaVecinity>>) -> usize {
-    0
-}

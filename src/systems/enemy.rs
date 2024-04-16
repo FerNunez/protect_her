@@ -49,7 +49,8 @@ pub fn enemy_spawn_system(
             .insert(Movable)
             .insert(Velocity { x: 0., y: 0. })
             .insert(SpriteSize::from(SPERM_SIZE))
-            .insert(Health(SPERM_HEALTH));
+            .insert(Health(SPERM_HEALTH))
+            .insert(CanFly);
 
         enemy_count.alive += 1;
     }

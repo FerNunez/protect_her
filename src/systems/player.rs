@@ -25,35 +25,39 @@ pub fn player_fire_system(
         // get vector velocity
         if let Ok(camera_tf) = camera_query.get_single() {
             let mouse_position_from_window = window_query.single().cursor_position();
-            //info!("mouse pos from window: {:?}", mouse_position_from_window);
+            //info!("mouse pos from indow: {:?}", mouse_position_from_window);
 
             let (velocity, angle) = match mouse_position_from_window {
                 Some(mouse_position_from_window) => {
                     // mouse pos from window frame (inverted y) to map frame
-                    let mouse_pos_from_camera = Vec2::new(
+                    let mouse_pos_from_camera_corner = Vec2::new(
                         mouse_position_from_window.x,
                         win_size.h - mouse_position_from_window.y,
                     );
-                    let win_size_gap = Vec2::new(win_size.w / 2., win_size.h / 2.);
+
+                    //info!( "mouse_pos_from_camera_corner: {:?}", mouse_pos_from_camera_corner);
+
+                    let win_size_gap = Vec2::new(win_size.w, win_size.h);
                     let camera_pos = Vec2::new(camera_tf.translation.x, camera_tf.translation.y);
-                    let camera_corner_pos = camera_pos - win_size_gap/2.;
-                    let mouse_pos_from_origin = camera_corner_pos + mouse_pos_from_camera;
+                    let camera_corner_pos = camera_pos - (win_size_gap / 2.);
+                    let mouse_pos_from_origin = camera_corner_pos + mouse_pos_from_camera_corner;
                     //let mouse_position_from_map = mouse_position_from_window + camera_pos + win_size_gap;
 
                     //info!("mouse pos xy: {:?}", mouse_pos);
                     //info!("camera_pos xy: {:?}", camera_pos);
                     // info!("win_sizes: {:?}", win_size_gap);
-                    //info!("player pos xy: {:?}", player_position);
                     // here remeber that position of player Y is positive going down
-                    let direction_vector = mouse_pos_from_origin - player_position.xy();
+                    let direction_vector =
+                        mouse_pos_from_origin - Vec2::new(player_position.x, player_position.y);
+                    let direction_vector_normalized = direction_vector.normalize_or_zero();
 
-                    let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 });
-
+                    // NOTE: not sure why negative angle
+                    let angle = -direction_vector_normalized.angle_between(Vec2 { x: 1.0, y: 0.0 })
+                        - PI / 2.;
                     (
                         Velocity {
-                            x: (direction_vector.x / direction_vector.length())
-                                * PLAYER_LASER_SPEED,
-                            y: -direction_vector.y / direction_vector.length() * PLAYER_LASER_SPEED,
+                            x: direction_vector_normalized.x * PLAYER_LASER_SPEED,
+                            y: direction_vector_normalized.y * PLAYER_LASER_SPEED,
                         },
                         angle,
                     )
@@ -85,7 +89,8 @@ pub fn player_fire_system(
                         .insert(FromPlayer)
                         .insert(Projectile)
                         .insert(Damage(PLAYER_DAMAGE))
-                        .insert(SpriteSize::from(PLAYER_LASER_SIZE));
+                        .insert(SpriteSize::from(PLAYER_LASER_SIZE))
+                        .insert(CanFly);
                 }
             }
         }
