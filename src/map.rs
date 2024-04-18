@@ -35,9 +35,9 @@ impl Map {
 
     pub fn in_bound(&self, pos: &Vec2) -> bool {
         pos.x >= 0.0
-            && pos.x <= (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0) as f32
+            && pos.x < ((MAP_SIZE_IN_TILES.0 - 1) * TILE_SIZE.0) as f32
             && pos.y >= 0.0
-            && pos.y <= (MAP_SIZE_IN_TILES.1 * TILE_SIZE.1) as f32
+            && pos.y < ((MAP_SIZE_IN_TILES.1 - 1) * TILE_SIZE.1) as f32
     }
     pub fn tile_in_bound(&self, tile_pos: &IVec2) -> bool {
         tile_pos.x >= 0

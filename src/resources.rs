@@ -1,6 +1,8 @@
 use bevy::{
+    math::Vec2,
     prelude::{Handle, Image, Resource},
-    time::Timer, sprite::TextureAtlasLayout,
+    sprite::TextureAtlasLayout,
+    time::Timer,
 };
 
 // Resources
@@ -20,6 +22,7 @@ pub struct GameState {
 pub struct GameTextures {
     pub player: Handle<Image>,
     pub enemy: Handle<Image>,
+    pub enemy_tail: Handle<Image>,
     pub player_laser: Handle<Image>,
     pub coin: Handle<Image>,
     pub skill: Handle<Image>,
@@ -28,13 +31,14 @@ pub struct GameTextures {
     // debug
     pub pixel: Handle<Image>,
     pub map_texture: Handle<Image>,
+    pub enemy_tail_animation: Handle<Image>,
 }
 
 #[derive(Resource)]
-pub struct GameAtlases {
-    pub map_texture: Handle<TextureAtlasLayout>,
+pub struct GameAtlaseLayouts {
+    pub map: Handle<TextureAtlasLayout>,
+    pub enemy_tail_animation: Handle<TextureAtlasLayout>,
 }
-
 
 #[derive(Resource)]
 pub struct PlayerState {
@@ -54,3 +58,11 @@ pub struct PlayerSkill {
 
 #[derive(Resource)]
 pub struct AtomaticPlayerSkillList(pub Vec<PlayerSkill>);
+
+#[derive(Resource)]
+pub struct WaveLevel(pub u32);
+
+#[derive(Resource)]
+pub struct LastMouse {
+    pub pos: Vec2,
+}

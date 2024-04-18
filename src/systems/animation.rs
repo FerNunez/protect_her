@@ -15,3 +15,18 @@ pub fn animate_being_hitted(
     }
 }
 
+pub fn animate_sprite(
+    time: Res<Time>,
+    mut query: Query<(&mut Animation, &mut TextureAtlas)>,
+) {
+    for (mut animation, mut atlas) in &mut query {
+        animation.timer.tick(time.delta());
+        if animation.timer.just_finished() {
+            atlas.index = if atlas.index == animation.last_index {
+                animation.first_index
+            } else {
+                atlas.index + 1
+            };
+        }
+    }
+}

@@ -68,6 +68,10 @@ mod prelude {
     pub const WALL_SPRITE: &str = "map_edit.png";
 
     pub const CAMERA_WINDOWS_MARGIN: f32 = 275.;
+
+    pub const MAX_WAVE_LEVEL: i32 = 100;
+    pub const ENEMY_SPAWN_RATE: u32 = 50;
+    pub const WAVE_TIMER: u64 = 10;
 }
 
 use crate::systems::camera::*;
@@ -132,6 +136,7 @@ fn main() {
             (
                 movable_system.after(player_keyboard_event_system),
                 rotable_system,
+                animate_sprite,
             ),
         )
         .run();

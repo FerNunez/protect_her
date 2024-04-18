@@ -90,16 +90,15 @@ pub struct AskingToMove;
 pub struct AskingToRotate;
 
 #[derive(Component)]
-pub struct WantsToMoveInDirecion{
+pub struct WantsToMoveInDirecion {
     pub entity: Entity,
 }
 
 #[derive(Component)]
 pub struct CanWallRide;
 
-
 #[derive(Component)]
-pub struct Collide{
+pub struct Collide {
     pub from: Entity,
     pub to: Entity,
     pub pos: Vec2,
@@ -110,3 +109,20 @@ pub struct HasCollided;
 
 #[derive(Component)]
 pub struct CanFly;
+
+#[derive(Component)]
+pub struct Animation {
+    pub first_index: usize,
+    pub last_index: usize,
+    pub timer: Timer,
+}
+
+impl Animation {
+    pub fn new(first_index: usize, last_index: usize, timer: Timer) -> Self {
+        Self {
+            first_index,
+            last_index,
+            timer,
+        }
+    }
+}

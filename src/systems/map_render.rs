@@ -6,7 +6,7 @@ pub fn render_map_system(
     mut commands: Commands,
     map: Res<Map>,
     game_textures: Res<GameTextures>,
-    game_atlases: Res<GameAtlases>,
+    game_atlases: Res<GameAtlaseLayouts>,
 ) {
     for y in 0..MAP_SIZE_IN_TILES.1 {
         for x in 0..MAP_SIZE_IN_TILES.0 {
@@ -21,7 +21,7 @@ pub fn render_map_system(
                         ),
                         texture: game_textures.map_texture.clone(),
                         atlas: TextureAtlas {
-                            layout: game_atlases.map_texture.clone(),
+                            layout: game_atlases.map.clone(),
                             index,
                         },
                         ..Default::default()
@@ -331,7 +331,7 @@ pub fn render_map_system(
                             ),
                             texture: game_textures.map_texture.clone(),
                             atlas: TextureAtlas {
-                                layout: game_atlases.map_texture.clone(),
+                                layout: game_atlases.map.clone(),
                                 index,
                             },
                             ..Default::default()

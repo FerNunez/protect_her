@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-
 pub fn setup_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -17,10 +16,10 @@ pub fn setup_system(
         ..Default::default()
     });
 
-
     let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 11, 11, None, None);
-    let texutre_atlas_layout = texture_atlases.add(layout.clone());
-
+    let map_atlas_layout = texture_atlases.add(layout.clone());
+    let enemy_layout = TextureAtlasLayout::from_grid(Vec2::new(19.0, 7.0), 7, 1, None, None);
+    let enemy_tail_animation_atlas_layout = texture_atlases.add(enemy_layout.clone());
 
     let window = windows_query.get_single().unwrap();
     let (win_w, win_h) = (window.resolution.width(), window.resolution.height());
@@ -31,6 +30,7 @@ pub fn setup_system(
     let game_texture = GameTextures {
         player: asset_server.load(EGG_SPRITE),
         enemy: asset_server.load(SPERM),
+        enemy_tail: asset_server.load("tail_19_7.png"),
         player_laser: asset_server.load(PLAYER_LASER_SPRITE),
         coin: asset_server.load(COIN_SPRITE),
         skill: asset_server.load(SKILL_SPRITE),
@@ -38,14 +38,15 @@ pub fn setup_system(
         wall: asset_server.load(WALL_SPRITE),
         pixel: asset_server.load("pixel_debug.png"),
         map_texture: asset_server.load("map_edit.png"),
+        enemy_tail_animation: asset_server.load("enemy_tail_animation.png"),
     };
     commands.insert_resource(game_texture);
 
-    let game_atlases = GameAtlases{
-        map_texture: texutre_atlas_layout,
+    let game_atlases = GameAtlaseLayouts {
+        map: map_atlas_layout,
+        enemy_tail_animation: enemy_tail_animation_atlas_layout,
     };
     commands.insert_resource(game_atlases);
-
 
     commands.insert_resource(PlayerState::default());
 
@@ -59,6 +60,8 @@ pub fn setup_system(
     });
     commands.insert_resource(AtomaticPlayerSkillList(Vec::new()));
 
+    commands.insert_resource(WaveLevel(0));
+    commands.insert_resource(LastMouse { pos: Vec2::ZERO });
     //    commands.spawn((
     //        TextBundle::from_sections([
     //            TextSection::new(
