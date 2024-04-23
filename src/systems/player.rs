@@ -1,13 +1,26 @@
-//use std::f32::consts::PI;
-//use std::time::Duration;
-//
-//use bevy::math::Vec2;
-//use bevy::window::PrimaryWindow;
-//use bevy::{prelude::*, time::common_conditions::on_timer};
-
 use crate::prelude::*;
-use bevy::math::bounding::{Aabb2d, BoundingCircle, IntersectsVolume};
+use bevy::{
+    input::mouse,
+    math::bounding::{Aabb2d, BoundingCircle, IntersectsVolume},
+};
 
+fn get_mouse_pos_from_origin(
+    mouse_position_from_window: Vec2,
+    window_size: Vec2,
+    camera_position: Vec3,
+) -> Vec2 {
+    // mouse pos from window frame (inverted y) to map frame
+    let mouse_pos_from_camera_corner = Vec2::new(
+        mouse_position_from_window.x,
+        window_size.y - mouse_position_from_window.y,
+    );
+
+    let win_size_gap = Vec2::new(window_size.x, window_size.y);
+    let camera_pos = Vec2::new(camera_position.x, camera_position.y);
+    let camera_corner_pos = camera_pos - (win_size_gap / 2.);
+    let mouse_pos_from_origin = camera_corner_pos + mouse_pos_from_camera_corner;
+    mouse_pos_from_origin
+}
 pub fn player_fire_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
@@ -18,46 +31,31 @@ pub fn player_fire_system(
     mut last_mouse: ResMut<LastMouse>,
     mouse_button: Res<ButtonInput<MouseButton>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    query: Query<&Transform, With<Player>>,
+    query: Query<&Transform, (With<Player>, Without<InEdit>)>,
     camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
 ) {
     if let Ok(player_tf) = query.get_single() {
         let player_position = Vec2::new(player_tf.translation.x, player_tf.translation.y);
         // get vector velocity
         if let Ok(camera_tf) = camera_query.get_single() {
-            let mouse_position_from_window = window_query.single().cursor_position();
-            //info!("mouse pos from indow: {:?}", mouse_position_from_window);
             //
-            let mouse_position_from_window = match mouse_position_from_window {
-                Some(mouse_pos) => 
-                    {
-                        last_mouse.pos = mouse_pos;
-                        mouse_pos
-                    },
+            let mouse_position_from_window = match window_query.single().cursor_position() {
+                Some(mouse_pos) => {
+                    last_mouse.pos = mouse_pos;
+                    mouse_pos
+                }
                 None => last_mouse.pos,
             };
 
-            // mouse pos from window frame (inverted y) to map frame
-            let mouse_pos_from_camera_corner = Vec2::new(
-                mouse_position_from_window.x,
-                win_size.h - mouse_position_from_window.y,
-            );
-
-            //info!( "mouse_pos_from_camera_corner: {:?}", mouse_pos_from_camera_corner);
-
             let win_size_gap = Vec2::new(win_size.w, win_size.h);
-            let camera_pos = Vec2::new(camera_tf.translation.x, camera_tf.translation.y);
-            let camera_corner_pos = camera_pos - (win_size_gap / 2.);
-            let mouse_pos_from_origin = camera_corner_pos + mouse_pos_from_camera_corner;
-            //let mouse_position_from_map = mouse_position_from_window + camera_pos + win_size_gap;
-
-            //info!("mouse pos xy: {:?}", mouse_pos);
-            //info!("camera_pos xy: {:?}", camera_pos);
-            // info!("win_sizes: {:?}", win_size_gap);
-            // here remeber that position of player Y is positive going down
-            let direction_vector =
-                mouse_pos_from_origin - Vec2::new(player_position.x, player_position.y);
-            let direction_vector_normalized = direction_vector.normalize_or_zero();
+            let mouse_position = get_mouse_pos_from_origin(
+                mouse_position_from_window,
+                win_size_gap,
+                camera_tf.translation,
+            );
+            let direction_vector_normalized = (mouse_position
+                - Vec2::new(player_position.x, player_position.y))
+            .normalize_or_zero();
 
             // NOTE: not sure why negative angle
             let angle =
@@ -134,6 +132,25 @@ pub fn player_fire_system(
     }
 }
 
+pub fn player_keyboard_edit_terrain(
+    kboard: Res<ButtonInput<KeyCode>>,
+    mut commands: Commands,
+    player_query: Query<Entity, With<Player>>,
+    in_edit_query: Query<(Entity, &InEdit)>,
+) {
+    if let Ok(player_entity) = player_query.get_single() {
+        if kboard.just_pressed(KeyCode::KeyQ) {
+            let in_edit = in_edit_query.get(player_entity);
+            if in_edit.is_ok() {
+                commands.entity(player_entity).remove::<InEdit>();
+                //info!("Remove InEdit");
+            } else {
+                commands.entity(player_entity).insert(InEdit);
+                //info!("Insert InEdit");
+            }
+        }
+    }
+}
 pub fn player_keyboard_dash_system(
     kboard: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
@@ -267,6 +284,7 @@ pub fn player_spawn_system(
             })
             .insert(Player)
             .insert(Movable)
+            .insert(FacingDirection(Vec2::ZERO))
             .insert(SpriteSize::from(EGG_SIZE))
             .insert(Velocity { x: 0., y: 0. })
             .insert(CanWallRide)
@@ -276,6 +294,7 @@ pub fn player_spawn_system(
 }
 
 pub fn player_keyboard_event_system(
+    time: Res<Time>,
     mut commands: Commands,
     kboard: Res<ButtonInput<KeyCode>>,
     mut query: Query<
@@ -284,7 +303,8 @@ pub fn player_keyboard_event_system(
     >,
 ) {
     if let Ok((entity, transform, mut velocity)) = query.get_single_mut() {
-        let angle = 0.01;
+        let delta_time = time.delta().as_secs_f32();
+
         velocity.x = if kboard.pressed(KeyCode::KeyA) {
             -1.
         } else if kboard.pressed(KeyCode::KeyD) {
@@ -301,10 +321,7 @@ pub fn player_keyboard_event_system(
             0.
         };
 
-        let delta = Vec2::new(
-            velocity.x * TIME_STEP * BASE_SPEED,
-            velocity.y * TIME_STEP * BASE_SPEED,
-        );
+        let delta = Vec2::new(velocity.x * delta_time, velocity.y * delta_time) * PLAYER_SPEED;
 
         if delta.x != 0. || delta.y != 0. {
             let destination = Vec2::new(
@@ -320,7 +337,58 @@ pub fn player_keyboard_event_system(
             commands.entity(entity).insert(AskingToMove);
         }
 
+        let extra = Vec2::new(velocity.x, velocity.y).length();
+        //let angle = (0.01 + extra) + transform.rotation.to_euler(EulerRot::YXZ).2;
+
+        let angle = transform.rotation.to_euler(EulerRot::YXZ).2;
+
         commands.spawn(WantsToRotate { entity, angle });
+    }
+}
+
+pub fn player_modify_map_system(
+    mut commands: Commands,
+    win_size: Res<WinSize>,
+    mouse_button: Res<ButtonInput<MouseButton>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    player_in_edit_query: Query<(Entity, &Transform), (With<Player>, With<InEdit>)>,
+    camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+    mut last_mouse: ResMut<LastMouse>,
+    map: Res<Map>,
+    game_textures: Res<GameTextures>, // DEBUG
+) {
+    if let Ok((player_entity, _player_tf)) = player_in_edit_query.get_single() {
+        if let Ok(camera_tf) = camera_query.get_single() {
+            let mouse_position_from_window = match window_query.single().cursor_position() {
+                Some(mouse_pos) => {
+                    last_mouse.pos = mouse_pos;
+                    mouse_pos
+                }
+                None => last_mouse.pos,
+            };
+            let win_size_gap = Vec2::new(win_size.w, win_size.h);
+            let mouse_position = get_mouse_pos_from_origin(
+                mouse_position_from_window,
+                win_size_gap,
+                camera_tf.translation,
+            );
+            let mouse_poistion_minus_tile =
+                mouse_position + Vec2::new(TILE_SIZE.0 as f32 / 2., TILE_SIZE.1 as f32 / 2.);
+
+            if mouse_button.pressed(MouseButton::Left) {
+                if !map.can_enter_tile(&mouse_poistion_minus_tile) {
+                    //info!(
+                    //    "Entt:{:?}, Spawning. UpdateTile: pos: {:?}, asking to Wall",
+                    //    player_entity, mouse_position
+                    //);
+                    commands.spawn(UpdateTile {
+                        from_entity: player_entity,
+                        position: mouse_poistion_minus_tile,
+                        tiletype: TilesType::Floor,
+                    });
+                }
+            }
+        }
     }
 }
 
@@ -395,4 +463,8 @@ pub fn player_pickup_skill_system(
             //}
         }
     }
+}
+pub fn player_update_animation(player_query: Query<(&FacingDirection, &Velocity), With<Player>>){
+
+
 }

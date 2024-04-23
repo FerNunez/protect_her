@@ -22,7 +22,7 @@ mod prelude {
     pub use crate::resources::*;
     pub use crate::systems::*;
 
-    pub const NUM_ENEMIES_MAX: u32 = 10000;
+    pub const NUM_ENEMIES_MAX: u32 = 1000;
     pub const ENEMY_SPAWN_RATE_PER_MIN: f32 = 10.;
 
     pub const TIME_STEP: f32 = 1. / 60.;
@@ -32,13 +32,13 @@ mod prelude {
     pub const TILE_SIZE: (i32, i32) = (32, 32);
     pub const TILE_SCALE: i32 = 1;
 
-    pub const EGG_SPRITE: &str = "egg_new_26_26.png";
+    pub const EGG_SPRITE: &str = "matrix.png";
     pub const EGG_SIZE: (f32, f32) = (32., 32.);
     pub const EGG_SCALE: f32 = 1.;
 
     pub const SPERM: &str = "sperm_only_head.png";
     pub const SPERM_SCALE: f32 = 1.;
-    pub const SPERM_SPEED: f32 = 0.15;
+    pub const SPERM_SPEED: f32 = 50.0;
     pub const SPERM_SIZE: (f32, f32) = (12., 8.0);
     pub const SPERM_HEALTH: f32 = 10.;
 
@@ -50,9 +50,10 @@ mod prelude {
 
     pub const PLAYER_LASER_SPRITE: &str = "laser_blue_18_32.png";
     pub const PLAYER_LASER_SIZE: (f32, f32) = (18., 32.);
-    pub const PLAYER_LASER_SPEED: f32 = 1.3;
+    pub const PLAYER_LASER_SPEED: f32 = 2.3;
     pub const PLAYER_DAMAGE: f32 = 2.;
     pub const PLAYER_LASER_SCALE: f32 = 1.;
+    pub const PLAYER_SPEED: f32 = 200.0;
 
     pub const FRAMES_HITTED: u16 = 10;
 
@@ -70,7 +71,7 @@ mod prelude {
     pub const CAMERA_WINDOWS_MARGIN: f32 = 275.;
 
     pub const MAX_WAVE_LEVEL: i32 = 100;
-    pub const ENEMY_SPAWN_RATE: u32 = 50;
+    pub const ENEMY_SPAWN_RATE: u32 = 20;
     pub const WAVE_TIMER: u64 = 10;
 }
 
@@ -84,6 +85,7 @@ use crate::systems::input_handler::*;
 use crate::systems::player::*;
 use crate::systems::skill::*;
 use crate::systems::ui::*;
+use crate::systems::map_render::*;
 
 use crate::enemy_builder::*;
 use crate::player_builder::*;
@@ -114,7 +116,7 @@ fn main() {
         .add_plugins(EnemyPlugin)
         .add_systems(PreStartup, setup_system)
         .add_systems(Startup, render_map_system)
-        .add_systems(PreUpdate, despawn_projectile_system)
+        .add_systems(PreUpdate, (despawn_projectile_system, update_render_map_system))
         .add_systems(
             Update,
             (

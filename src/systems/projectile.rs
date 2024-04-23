@@ -40,7 +40,7 @@ pub fn despawn_projectile_system(
         {
 
             if enemy_query.get(collide.to).is_ok(){
-                commands.entity(collide.to).despawn();
+                commands.entity(collide.to).despawn_recursive();
 
             }
             commands.entity(collide.from).despawn();

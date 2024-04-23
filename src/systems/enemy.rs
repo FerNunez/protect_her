@@ -50,7 +50,7 @@ pub fn enemy_spawn_system(
                     )),
                     ..Default::default()
                 })
-                .insert(Enemy)
+                .insert(Enemy::new())
                 .insert(Movable)
                 .insert(Velocity { x: 0., y: 0. })
                 .insert(SpriteSize::from(SPERM_SIZE))
@@ -89,26 +89,25 @@ pub fn enemy_spawn_system(
 
 // drunk movement
 pub fn enemy_target_player(
+    time: Res<Time>,
     mut commands: Commands,
     player_state: Res<PlayerState>,
-    mut enemy_query: Query<(Entity, &mut Velocity, &mut Transform), (With<Enemy>, Without<Player>)>,
+    mut enemy_query: Query<(Entity, &Enemy, &mut Velocity, &mut Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
 ) {
     if player_state.alive {
         if let Ok(player_transform) = player_query.get_single() {
-            for (enemy_entity, mut enemy_velocity, enemy_transform) in enemy_query.iter_mut() {
-                let direction_vector = Vec2::new(
-                    player_transform.translation.x - enemy_transform.translation.x,
-                    -(player_transform.translation.y - enemy_transform.translation.y),
-                );
+            for (enemy_entity, enemy, mut enemy_velocity, enemy_transform) in enemy_query.iter_mut()
+            {
+                //let (destination, angle) = enemy.bicycle_model(enemy_transform, player_transform.translation.xy());
+                let (direction_vector, angle) =
+                    enemy.perfect_model(&enemy_transform, &player_transform.translation.xy());
 
-                enemy_velocity.x = (direction_vector.x / direction_vector.length()) * SPERM_SPEED;
-                enemy_velocity.y = -(direction_vector.y / direction_vector.length()) * SPERM_SPEED;
+                enemy_velocity.x = direction_vector.normalize_or_zero().x * SPERM_SPEED;
+                enemy_velocity.y = -direction_vector.normalize_or_zero().y * SPERM_SPEED;
+                let delta_time = time.delta().as_secs_f32();
 
-                let delta = Vec2::new(
-                    enemy_velocity.x * TIME_STEP * BASE_SPEED,
-                    enemy_velocity.y * TIME_STEP * BASE_SPEED,
-                );
+                let delta = Vec2::new(enemy_velocity.x * delta_time, enemy_velocity.y * delta_time);
 
                 if delta.x != 0. || delta.y != 0. {
                     let destination = Vec2::new(
@@ -122,7 +121,6 @@ pub fn enemy_target_player(
                     });
                 }
 
-                let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 }) + PI / 2.;
                 //enemy_transform.rotation = Quat::from_rotation_z(angle );
                 commands.spawn(WantsToRotate {
                     entity: enemy_entity,

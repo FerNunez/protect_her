@@ -50,7 +50,7 @@ pub fn setup_system(
 
     commands.insert_resource(PlayerState::default());
 
-    let game_state = GameState { zoom: 1., coins: 0 };
+    let game_state = GameState { zoom: 2., coins: 0 };
     commands.insert_resource(game_state);
 
     commands.insert_resource(EnemyCount { alive: 0, dead: 0 });

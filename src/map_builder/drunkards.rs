@@ -15,7 +15,7 @@ impl MapArchitect for DrunkardsWalkArchitect {
 
         let mut rng = thread_rng();
         // start all wall
-        mb.fill(TilesType::Wall);
+        mb.fill(TilesType::Lava);
         let center = IVec2::new(MAP_SIZE_IN_TILES.0 / 2, MAP_SIZE_IN_TILES.1 / 2);
         self.drunkard(&center, &mut mb.map);
         while mb

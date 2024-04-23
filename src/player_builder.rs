@@ -1,7 +1,7 @@
-
 use crate::prelude::*;
 
 use crate::systems::player::*;
+
 
 impl Default for PlayerState {
     fn default() -> Self {
@@ -30,6 +30,9 @@ impl Plugin for PlayerPlugin {
                 player_fire_system,
                 player_keyboard_dash_system,
                 player_laser_hit_enemy_system,
+                player_keyboard_edit_terrain,
+                player_modify_map_system,
+                player_update_animation,
                 //player_dash_system,
             ),
         );

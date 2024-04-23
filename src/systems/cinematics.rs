@@ -9,6 +9,7 @@ pub fn movable_system(
     query_wall_ride: Query<&CanWallRide>,
     query_has_collided: Query<&HasCollided>,
     query_can_fly: Query<&CanFly>,
+    mut query_facing_direction: Query<&mut FacingDirection>,
 ) {
     //println!("calling movable_system");
     for (entity, wants_to_move) in query_wants_to_move.iter() {
@@ -17,8 +18,12 @@ pub fn movable_system(
         //let _can_wall_ride = query_wall_ride.get_comonent::<CanWallRide>(wants_to_move.entity);
         let can_fly = query_can_fly.get(wants_to_move.entity);
         let player_entity = wants_to_move.entity;
+        let facing_direction = query_facing_direction.get_mut(wants_to_move.entity);
 
         if let Ok(mut transform) = transform {
+            if let Ok(mut facing_direction) = facing_direction {
+                facing_direction.0 = wants_to_move.destination.normalize_or_zero().clone();
+            }
             if map.in_bound(&wants_to_move.destination)
                 && (map.tile_can_enter_tile(&wants_to_move.destination) || can_fly.is_ok())
             {
@@ -91,26 +96,21 @@ pub fn rotable_system(
 ) {
     for (entity, wants_to_rotate) in query_wants_to_rotate.iter() {
         let transform = query_transform.get_mut(wants_to_rotate.entity);
-        let velocity = query_velocity.get(wants_to_rotate.entity);
-
-        let player_entity = wants_to_rotate.entity;
-
-        if let Ok(mut transform) = transform {
-            let extra = if let Ok(velocity) = velocity {
-                0.1 * ((velocity.x.abs() + velocity.y.abs()) / 2.)
-            } else {
-                0.0
-            };
-
-            transform.rotate_z(0.01 + extra);
-        }
+        //let velocity = query_velocity.get(wants_to_rotate.entity);
 
         //println!(
         //    " deleing wantstomove: {player_entity:?} destination: {},{}",
         //    destination.x, destination.y
         //);
+        //
+        if let Ok(mut transform) = transform {
+            let rotation = &mut transform.rotation;
+            *rotation = Quat::from_euler(EulerRot::YXZ, 0., 0., wants_to_rotate.angle);
+            //transform.rotate_z(wants_to_rotate.angle);
+            //transform transform.rotation(Quat::from_euler(EulerRot::YXZ, 0., 0.,wants_to_rotate.angle));
+        }
         commands.entity(entity).despawn();
-        commands.entity(player_entity).remove::<WantsToRotate>();
+        //commands.entity(wants_to_rotate.entity).remove::<WantsToRotate>();
 
         //transform.rotate_z(0.01 + 0.1 * (velocity.x.abs() + velocity.y.abs()) / 2.);
     }

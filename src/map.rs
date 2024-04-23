@@ -4,7 +4,6 @@ pub const NUM_TILES: i32 = MAP_SIZE_IN_TILES.0 * MAP_SIZE_IN_TILES.1;
 
 #[derive(Copy, Clone, PartialEq, Hash, Eq)]
 pub enum LavaVecinity {
-    None,
     N,
     NE,
     E,
@@ -15,21 +14,23 @@ pub enum LavaVecinity {
     NW,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum TilesType {
-    Wall,
+    Lava,
     Floor,
 }
 
 #[derive(Resource)]
 pub struct Map {
     pub tiles: Vec<TilesType>,
+    pub ids: Vec<Option<Entity>>,
 }
 
 impl Map {
     pub fn new() -> Self {
         Self {
             tiles: vec![TilesType::Floor; NUM_TILES as usize],
+            ids: vec![None; NUM_TILES as usize],
         }
     }
 
@@ -47,23 +48,24 @@ impl Map {
     }
 
     pub fn can_enter_tile(&self, pos: &Vec2) -> bool {
-        self.in_bound(&pos) && self.tiles[pos_to_map_idx(pos.x, pos.y)] != TilesType::Wall
+        self.in_bound(&pos) && self.tiles[pos_to_map_idx(pos.x, pos.y)] != TilesType::Lava
+    }
+
+    pub fn get_tile_from_position(&self, pos: &Vec2) -> Option<TilesType> {
+        if self.in_bound(&pos) {
+            Some(self.tiles[pos_to_map_idx(pos.x, pos.y)])
+        } else {
+            None
+        }
     }
 
     pub fn tile_can_enter_tile(&self, pos: &Vec2) -> bool {
-        // let gap = 26./2.;
-        // self.in_bound(&pos)
-        //     && self.tiles[pos_to_map_idx(pos.x - gap, pos.y - gap)] == TilesType::Floor
-        //     && self.tiles[pos_to_map_idx(pos.x - gap, pos.y + gap)] == TilesType::Floor
-        //     && self.tiles[pos_to_map_idx(pos.x + gap, pos.y - gap)] == TilesType::Floor
-        //     && self.tiles[pos_to_map_idx(pos.x + gap, pos.y + gap)] == TilesType::Floor
-
         // declaed to right
         self.in_bound(&pos)
-            && self.tiles[pos_to_map_idx(pos.x, pos.y)] != TilesType::Wall
-            && self.tiles[pos_to_map_idx(pos.x + 26., pos.y)] != TilesType::Wall
-            && self.tiles[pos_to_map_idx(pos.x, pos.y + 26.)] != TilesType::Wall
-            && self.tiles[pos_to_map_idx(pos.x + 26., pos.y + 26.)] != TilesType::Wall
+            && self.tiles[pos_to_map_idx(pos.x, pos.y)] != TilesType::Lava
+            && self.tiles[pos_to_map_idx(pos.x + 26., pos.y)] != TilesType::Lava
+            && self.tiles[pos_to_map_idx(pos.x, pos.y + 26.)] != TilesType::Lava
+            && self.tiles[pos_to_map_idx(pos.x + 26., pos.y + 26.)] != TilesType::Lava
     }
 }
 pub fn pos_to_map_idx(x: f32, y: f32) -> usize {
@@ -137,7 +139,7 @@ fn test_can_enter_tile() {
 #[test]
 fn test_cannot_enter_tile() {
     let mut map = Map::new();
-    map.tiles[0] = TilesType::Wall;
+    map.tiles[0] = TilesType::Lava;
     let pos = Vec2::new(0.0, 0.0);
     assert!(!map.can_enter_tile(&pos));
 }

@@ -4,7 +4,8 @@ use crate::systems::enemy::*;
 pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, enemy_spawn_system)
+        app
+            //.add_systems(PreUpdate, enemy_debug_spawn_system)
             .add_systems(
                 Update,
                 (
@@ -19,37 +20,3 @@ impl Plugin for EnemyPlugin {
     }
 }
 
-//pub struct Wave{
-//    pub level: i32,
-//    pub number_spawn: i32,
-//    pub game_timestamp: Duration
-//}
-//impl Default for Wave{
-//
-//    fn default() -> Self {
-//        Self {
-//            level: MAX_WAVE_LEVEL,
-//            number_spawn: 0,
-//            game_timestamp: Duration::new(10,0),
-//
-//        }
-//    }
-//}
-//
-//pub struct Waves{
-//    pub wave: Vec<Wave>,
-//}
-//
-
-//pub fn run_if_time_spawn(
-//    time: Res<Time>,
-//    wave_level: Res<WaveLevel>,
-//)
-//{
-//    let game_duration = time.elapsed();
-//    if (game_duration.as_secs() > )
-//{
-//    }
-//    // spanw level^2 * monster
-//
-//}

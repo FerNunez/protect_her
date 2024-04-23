@@ -1,10 +1,46 @@
-use bevy::{ecs::entity::Entity, math::Vec2, prelude::Component, time::Timer};
+use bevy::transform::components;
+
+use crate::prelude::*;
 
 #[derive(Component)]
 pub struct Player;
 
 #[derive(Component)]
-pub struct Enemy;
+pub struct Enemy {
+    pub life_duration: Duration,
+}
+
+impl Enemy {
+    pub fn new() -> Self {
+        Self {
+            life_duration: Duration::ZERO,
+        }
+    }
+
+    pub fn bicycle_model(&self, origin: &Transform, destination: Vec2) -> (Vec2, f32) {
+        let direction_vector = Vec2::new(
+            destination.x - origin.translation.x,
+            -(destination.y - origin.translation.y),
+        );
+        //let *self.life_duration.as_secs_f32()/10.;
+        let angle = direction_vector.angle_between(Vec2 { x: 0.0, y: -1.0 }) + PI / 2.;
+
+        (Vec2::new(0., 0.), 0.0)
+    }
+
+    pub fn perfect_model(&self, origin: &Transform, destination: &Vec2) -> (Vec2, f32) {
+        let direction_vector = Vec2::new(
+            destination.x - origin.translation.x,
+            -(destination.y - origin.translation.y),
+        );
+
+        //let angle = Vec2::new(1.0, 0.0).angle_between(direction_vector);
+        // NOTE: THIS PI IS CAUSE OF THE sperm was inverted :(
+        let angle = direction_vector.angle_between(Vec2::new(1.0, 0.)) + PI;
+
+        (direction_vector, angle)
+    }
+}
 
 #[derive(Component)]
 pub struct Velocity {
@@ -29,6 +65,8 @@ impl From<(f32, f32)> for SpriteSize {
         SpriteSize(Vec2::new(val.0, val.1))
     }
 }
+#[derive(Component)]
+pub struct FacingDirection(pub Vec2);
 
 #[derive(Component)]
 pub struct Health(pub f32);
@@ -110,13 +148,6 @@ pub struct HasCollided;
 #[derive(Component)]
 pub struct CanFly;
 
-#[derive(Component)]
-pub struct Animation {
-    pub first_index: usize,
-    pub last_index: usize,
-    pub timer: Timer,
-}
-
 impl Animation {
     pub fn new(first_index: usize, last_index: usize, timer: Timer) -> Self {
         Self {
@@ -125,4 +156,33 @@ impl Animation {
             timer,
         }
     }
+}
+impl Default for Animation {
+    fn default() -> Self {
+        Self::new(0, 0, Timer::from_seconds(100.0, TimerMode::Once))
+    }
+}
+
+#[derive(Component)]
+pub struct InEdit;
+
+#[derive(Component)]
+pub struct UpdateTile {
+    pub from_entity: Entity,
+    pub position: Vec2,
+    pub tiletype: TilesType,
+}
+
+#[derive(Component)]
+pub struct Animation {
+    pub first_index: usize,
+    pub last_index: usize,
+    pub timer: Timer,
+}
+#[derive(Component)]
+pub enum PlayerAnimation {
+    MovingDown(Animation),
+    MovingUp(Animation),
+    MovingSide(Animation),
+    Idle(Animation),
 }
