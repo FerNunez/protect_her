@@ -1,9 +1,4 @@
-use bevy::{
-    math::Vec2,
-    prelude::{Handle, Image, Resource},
-    sprite::TextureAtlasLayout,
-    time::Timer,
-};
+use crate::prelude::*;
 
 // Resources
 #[derive(Resource)]
@@ -32,12 +27,14 @@ pub struct GameTextures {
     pub pixel: Handle<Image>,
     pub map_texture: Handle<Image>,
     pub enemy_tail_animation: Handle<Image>,
+    pub player_animation: Handle<Image>,
 }
 
 #[derive(Resource)]
 pub struct GameAtlaseLayouts {
     pub map: Handle<TextureAtlasLayout>,
     pub enemy_tail_animation: Handle<TextureAtlasLayout>,
+    pub player_animation: Handle<TextureAtlasLayout>,
 }
 
 #[derive(Resource)]
@@ -65,4 +62,11 @@ pub struct WaveLevel(pub u32);
 #[derive(Resource)]
 pub struct LastMouse {
     pub pos: Vec2,
+}
+#[derive(Resource)]
+pub struct PlayerAnimations{
+    pub moving_down: Animation,
+    pub moving_up: Animation,
+    pub moving_side: Animation,
+    pub idle: Animation,
 }

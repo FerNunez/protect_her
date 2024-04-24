@@ -3,7 +3,7 @@ use crate::prelude::*;
 pub const NUM_TILES: i32 = MAP_SIZE_IN_TILES.0 * MAP_SIZE_IN_TILES.1;
 
 #[derive(Copy, Clone, PartialEq, Hash, Eq)]
-pub enum LavaVecinity {
+pub enum CardinalDirections {
     N,
     NE,
     E,

@@ -58,11 +58,7 @@ pub fn enemy_spawn_system(
                 .insert(CanFly)
                 .id();
 
-            let tail_animation = Animation::new(
-                0,
-                6,
-                Timer::new(Duration::from_millis(200), TimerMode::Repeating),
-            );
+            let tail_animation = Animation::new(0, 6, 200);
 
             let tail = commands
                 .spawn(SpriteSheetBundle {

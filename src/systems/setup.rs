@@ -15,11 +15,27 @@ pub fn setup_system(
         ),
         ..Default::default()
     });
-
-    let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 11, 11, None, None);
-    let map_atlas_layout = texture_atlases.add(layout.clone());
-    let enemy_layout = TextureAtlasLayout::from_grid(Vec2::new(19.0, 7.0), 7, 1, None, None);
-    let enemy_tail_animation_atlas_layout = texture_atlases.add(enemy_layout.clone());
+    let map_atlas_layout = texture_atlases.add(TextureAtlasLayout::from_grid(
+        Vec2::new(32.0, 32.0),
+        11,
+        11,
+        None,
+        None,
+    ));
+    let enemy_tail_animation_atlas_layout = texture_atlases.add(TextureAtlasLayout::from_grid(
+        Vec2::new(19.0, 7.0),
+        7,
+        1,
+        None,
+        None,
+    ));
+    let player_animation_atlas_layout = texture_atlases.add(TextureAtlasLayout::from_grid(
+        Vec2::new(32.0, 32.0),
+        6,
+        6,
+        None,
+        None,
+    ));
 
     let window = windows_query.get_single().unwrap();
     let (win_w, win_h) = (window.resolution.width(), window.resolution.height());
@@ -39,18 +55,20 @@ pub fn setup_system(
         pixel: asset_server.load("pixel_debug.png"),
         map_texture: asset_server.load("map_edit.png"),
         enemy_tail_animation: asset_server.load("enemy_tail_animation.png"),
+        player_animation: asset_server.load("player_animation.png"),
     };
     commands.insert_resource(game_texture);
 
     let game_atlases = GameAtlaseLayouts {
         map: map_atlas_layout,
         enemy_tail_animation: enemy_tail_animation_atlas_layout,
+        player_animation: player_animation_atlas_layout,
     };
     commands.insert_resource(game_atlases);
 
     commands.insert_resource(PlayerState::default());
 
-    let game_state = GameState { zoom: 2., coins: 0 };
+    let game_state = GameState { zoom: 0.65, coins: 0 };
     commands.insert_resource(game_state);
 
     commands.insert_resource(EnemyCount { alive: 0, dead: 0 });

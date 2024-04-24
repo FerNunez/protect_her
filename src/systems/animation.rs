@@ -17,9 +17,9 @@ pub fn animate_being_hitted(
 
 pub fn animate_sprite(
     time: Res<Time>,
-    mut query: Query<(&mut Animation, &mut TextureAtlas)>,
+    mut query: Query<(&mut Animation, &mut Sprite, &mut TextureAtlas)>,
 ) {
-    for (mut animation, mut atlas) in &mut query {
+    for (mut animation, mut sprite, mut atlas) in &mut query {
         animation.timer.tick(time.delta());
         if animation.timer.just_finished() {
             atlas.index = if atlas.index == animation.last_index {
@@ -28,5 +28,8 @@ pub fn animate_sprite(
                 atlas.index + 1
             };
         }
+
+            sprite.flip_x = animation.flip;
+
     }
 }

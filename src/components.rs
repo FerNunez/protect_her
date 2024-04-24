@@ -66,7 +66,52 @@ impl From<(f32, f32)> for SpriteSize {
     }
 }
 #[derive(Component)]
-pub struct FacingDirection(pub Vec2);
+pub struct FacingDirection {
+    pub cardinal_coordinate: CardinalDirections,
+}
+
+impl FacingDirection {
+    pub fn new(cardinal_coordinate: CardinalDirections) -> Self {
+        Self {
+            cardinal_coordinate,
+        }
+    }
+
+    pub fn face_to_vec2(&mut self, vec: Vec2) {
+        self.cardinal_coordinate = cardinal_coord_from_vec2(vec);
+    }
+}
+
+pub fn cardinal_coord_from_vec2(vec: Vec2) -> CardinalDirections {
+    let angle = vec.angle_between(Vec2::new(1., 0.)) + PI;
+    if angle < 15. {
+        CardinalDirections::E
+    } else if angle < 60. {
+        CardinalDirections::NE
+    } else if angle < 105. {
+        CardinalDirections::N
+    } else if angle < 150. {
+        CardinalDirections::NW
+    } else if angle < 195. {
+        CardinalDirections::W
+    } else if angle < 240. {
+        CardinalDirections::SW
+    } else if angle < 285. {
+        CardinalDirections::S
+    } else if angle < 330. {
+        CardinalDirections::SE
+    } else {
+        CardinalDirections::E
+    }
+}
+impl From<(Vec2)> for FacingDirection {
+    fn from(val: Vec2) -> Self {
+        let facing_dir = FacingDirection {
+            cardinal_coordinate: cardinal_coord_from_vec2(val),
+        };
+        facing_dir
+    }
+}
 
 #[derive(Component)]
 pub struct Health(pub f32);
@@ -148,18 +193,42 @@ pub struct HasCollided;
 #[derive(Component)]
 pub struct CanFly;
 
+#[derive(Clone, Component)]
+pub struct Animation {
+    pub first_index: usize,
+    pub last_index: usize,
+    pub flip: bool,
+    pub timer: Timer,
+}
+
 impl Animation {
-    pub fn new(first_index: usize, last_index: usize, timer: Timer) -> Self {
+    pub fn new_from_millis(first_index: usize, last_index: usize, miliseconds: u64) -> Self {
         Self {
             first_index,
             last_index,
-            timer,
+            timer: Timer::new(Duration::from_millis(miliseconds), TimerMode::Repeating),
+            flip: false,
         }
+    }
+
+    pub fn new(first_index: usize, last_index: usize, milliseconds: u64) -> Self {
+        Self::new_from_millis(first_index, last_index, milliseconds)
+    }
+
+    pub fn same_index(&self, rhs: &Animation) -> bool {
+        if self.first_index == rhs.first_index && self.last_index == rhs.last_index {
+            return true;
+        }
+
+        return false;
+    }
+    pub fn set_flip(&mut self, val: bool){
+        self.flip = val;
     }
 }
 impl Default for Animation {
     fn default() -> Self {
-        Self::new(0, 0, Timer::from_seconds(100.0, TimerMode::Once))
+        Self::new_from_millis(0, 0, 100)
     }
 }
 
@@ -173,16 +242,30 @@ pub struct UpdateTile {
     pub tiletype: TilesType,
 }
 
-#[derive(Component)]
-pub struct Animation {
-    pub first_index: usize,
-    pub last_index: usize,
-    pub timer: Timer,
+
+#[derive(Clone, Copy, PartialEq, PartialOrd)]
+pub enum PlayerAnimationState {
+    MovingDown,
+    MovingUp,
+    MovingLeft,
+    MovingRight,
+    Idle,
+    FacingDown,
 }
 #[derive(Component)]
-pub enum PlayerAnimation {
-    MovingDown(Animation),
-    MovingUp(Animation),
-    MovingSide(Animation),
-    Idle(Animation),
+pub struct PlayerAnimation {
+    pub current_state: PlayerAnimationState,
+    pub moving_down: Animation,
+    pub moving_up: Animation,
+    pub moving_side: Animation,
+    pub idle: Animation,
 }
+
+pub enum Side {
+    Left,
+    Right,
+    Center,
+}
+
+#[derive(Component)]
+pub struct FlipRender;

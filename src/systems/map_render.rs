@@ -81,75 +81,75 @@ pub fn render_map_system(
     });
 }
 
-pub fn get_index_from_vecinity(lava_vecinities: &HashSet<LavaVecinity>) -> usize {
+pub fn get_index_from_vecinity(lava_vecinities: &HashSet<CardinalDirections>) -> usize {
     let mut index = 76;
 
     if lava_vecinities.len() == 1 {
-        if lava_vecinities.contains(&LavaVecinity::NE) {
+        if lava_vecinities.contains(&CardinalDirections::NE) {
             index = 11 * 2 + 5;
         }
-        if lava_vecinities.contains(&LavaVecinity::NW) {
+        if lava_vecinities.contains(&CardinalDirections::NW) {
             index = 11 * 2 + 6;
         }
-        if lava_vecinities.contains(&LavaVecinity::SE) {
+        if lava_vecinities.contains(&CardinalDirections::SE) {
             index = 11 * 1 + 5;
         }
-        if lava_vecinities.contains(&LavaVecinity::SW) {
+        if lava_vecinities.contains(&CardinalDirections::SW) {
             index = 11 * 1 + 6;
         }
     } else if lava_vecinities.len() == 2 {
-        if lava_vecinities.contains(&LavaVecinity::NW)
-            && lava_vecinities.contains(&LavaVecinity::NE)
+        if lava_vecinities.contains(&CardinalDirections::NW)
+            && lava_vecinities.contains(&CardinalDirections::NE)
         {
             index = 11 * 2 + 8;
-        } else if lava_vecinities.contains(&LavaVecinity::SW)
-            && lava_vecinities.contains(&LavaVecinity::SE)
+        } else if lava_vecinities.contains(&CardinalDirections::SW)
+            && lava_vecinities.contains(&CardinalDirections::SE)
         {
             index = 11 * 1 + 8;
-        } else if lava_vecinities.contains(&LavaVecinity::NW)
-            && lava_vecinities.contains(&LavaVecinity::SE)
+        } else if lava_vecinities.contains(&CardinalDirections::NW)
+            && lava_vecinities.contains(&CardinalDirections::SE)
         {
             index = 11 * 0 + 9;
-        } else if lava_vecinities.contains(&LavaVecinity::NW)
-            && lava_vecinities.contains(&LavaVecinity::SW)
+        } else if lava_vecinities.contains(&CardinalDirections::NW)
+            && lava_vecinities.contains(&CardinalDirections::SW)
         {
             index = 11 * 4 + 6;
-        } else if lava_vecinities.contains(&LavaVecinity::NE)
-            && lava_vecinities.contains(&LavaVecinity::SW)
+        } else if lava_vecinities.contains(&CardinalDirections::NE)
+            && lava_vecinities.contains(&CardinalDirections::SW)
         {
             index = 11 * 1 + 9;
-        } else if lava_vecinities.contains(&LavaVecinity::NE)
-            && lava_vecinities.contains(&LavaVecinity::SE)
+        } else if lava_vecinities.contains(&CardinalDirections::NE)
+            && lava_vecinities.contains(&CardinalDirections::SE)
         {
             index = 11 * 4 + 5;
         }
     } else if lava_vecinities.len() == 3 {
-        if lava_vecinities.contains(&LavaVecinity::NE)
-            && lava_vecinities.contains(&LavaVecinity::NW)
-            && lava_vecinities.contains(&LavaVecinity::SW)
+        if lava_vecinities.contains(&CardinalDirections::NE)
+            && lava_vecinities.contains(&CardinalDirections::NW)
+            && lava_vecinities.contains(&CardinalDirections::SW)
         {
             index = 11 * 2 + 9;
-        } else if lava_vecinities.contains(&LavaVecinity::NE)
-            && lava_vecinities.contains(&LavaVecinity::NW)
-            && lava_vecinities.contains(&LavaVecinity::SE)
+        } else if lava_vecinities.contains(&CardinalDirections::NE)
+            && lava_vecinities.contains(&CardinalDirections::NW)
+            && lava_vecinities.contains(&CardinalDirections::SE)
         {
             index = 11 * 2 + 10;
-        } else if lava_vecinities.contains(&LavaVecinity::NW)
-            && lava_vecinities.contains(&LavaVecinity::SW)
-            && lava_vecinities.contains(&LavaVecinity::SE)
+        } else if lava_vecinities.contains(&CardinalDirections::NW)
+            && lava_vecinities.contains(&CardinalDirections::SW)
+            && lava_vecinities.contains(&CardinalDirections::SE)
         {
             index = 11 * 3 + 9;
-        } else if lava_vecinities.contains(&LavaVecinity::NE)
-            && lava_vecinities.contains(&LavaVecinity::SW)
-            && lava_vecinities.contains(&LavaVecinity::SE)
+        } else if lava_vecinities.contains(&CardinalDirections::NE)
+            && lava_vecinities.contains(&CardinalDirections::SW)
+            && lava_vecinities.contains(&CardinalDirections::SE)
         {
             index = 11 * 3 + 10;
         }
     } else if lava_vecinities.len() == 4 {
-        if lava_vecinities.contains(&LavaVecinity::NE)
-            && lava_vecinities.contains(&LavaVecinity::NW)
-            && lava_vecinities.contains(&LavaVecinity::SE)
-            && lava_vecinities.contains(&LavaVecinity::SW)
+        if lava_vecinities.contains(&CardinalDirections::NE)
+            && lava_vecinities.contains(&CardinalDirections::NW)
+            && lava_vecinities.contains(&CardinalDirections::SE)
+            && lava_vecinities.contains(&CardinalDirections::SW)
         {
             index = 11 * 4 + 9;
         }
@@ -163,217 +163,217 @@ pub fn get_index_from_vecinity(lava_vecinities: &HashSet<LavaVecinity>) -> usize
     }
 
     if index > 75 {
-        if lava_vecinities.contains(&LavaVecinity::N) {
-            if lava_vecinities.contains(&LavaVecinity::E)
-                && lava_vecinities.contains(&LavaVecinity::S)
+        if lava_vecinities.contains(&CardinalDirections::N) {
+            if lava_vecinities.contains(&CardinalDirections::E)
+                && lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 3 + 2;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::S)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 3 + 0;
-            } else if lava_vecinities.contains(&LavaVecinity::S) {
+            } else if lava_vecinities.contains(&CardinalDirections::S) {
                 index = 11 * 3 + 1;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::E)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::E)
             {
                 index = 11 * 0 + 3;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::S)
-                && lava_vecinities.contains(&LavaVecinity::E)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::S)
+                && lava_vecinities.contains(&CardinalDirections::E)
             {
                 index = 11 * 3 + 3;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::SE)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::SE)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 0 + 4;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::SE)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::SE)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 0 + 5;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::SW)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::SW)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 0 + 6;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::SW)
-                && lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::SW)
+                && lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 0 + 7;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::SW)
-                && lava_vecinities.contains(&LavaVecinity::SE)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::SW)
+                && lava_vecinities.contains(&CardinalDirections::SE)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 0 + 7;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::SW)
-                && !lava_vecinities.contains(&LavaVecinity::SE)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::SW)
+                && !lava_vecinities.contains(&CardinalDirections::SE)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 0 + 1;
-            } else if lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && !lava_vecinities.contains(&LavaVecinity::SW)
+            } else if lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && !lava_vecinities.contains(&CardinalDirections::SW)
             {
                 index = 2;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && !lava_vecinities.contains(&LavaVecinity::SE)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && !lava_vecinities.contains(&CardinalDirections::SE)
             {
                 index = 0;
             }
-        } else if lava_vecinities.contains(&LavaVecinity::S) {
-            if lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::NE)
+        } else if lava_vecinities.contains(&CardinalDirections::S) {
+            if lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::NE)
             {
                 index = 11 * 2 + 0;
-            } else if lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::NW)
+            } else if lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::NW)
             {
                 index = 11 * 2 + 2;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && lava_vecinities.contains(&LavaVecinity::NE)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && lava_vecinities.contains(&CardinalDirections::NE)
             {
                 index = 11 * 3 + 4;
-            } else if lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::NW)
+            } else if lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::NW)
             {
                 index = 11 * 3 + 7;
-            } else if !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::NW)
-                && lava_vecinities.contains(&LavaVecinity::NE)
+            } else if !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::NW)
+                && lava_vecinities.contains(&CardinalDirections::NE)
             {
                 index = 11 * 3 + 8;
-            } else if !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::W)
-                && lava_vecinities.contains(&LavaVecinity::NW)
-                && !lava_vecinities.contains(&LavaVecinity::NE)
+            } else if !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::W)
+                && lava_vecinities.contains(&CardinalDirections::NW)
+                && !lava_vecinities.contains(&CardinalDirections::NE)
             {
                 index = 11 * 3 + 6;
-            } else if !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::NW)
-                && lava_vecinities.contains(&LavaVecinity::NE)
+            } else if !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::NW)
+                && lava_vecinities.contains(&CardinalDirections::NE)
             {
                 index = 11 * 3 + 5;
-            } else if !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::NW)
-                && !lava_vecinities.contains(&LavaVecinity::NE)
-                && !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::W)
+            } else if !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::NW)
+                && !lava_vecinities.contains(&CardinalDirections::NE)
+                && !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::W)
             {
                 index = 11 * 2 + 1;
-            } else if lava_vecinities.contains(&LavaVecinity::E)
-                && lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
+            } else if lava_vecinities.contains(&CardinalDirections::E)
+                && lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
             {
                 index = 11 * 2 + 3;
             }
-        } else if lava_vecinities.contains(&LavaVecinity::E) {
-            if !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && !lava_vecinities.contains(&LavaVecinity::NW)
-                && !lava_vecinities.contains(&LavaVecinity::SW)
+        } else if lava_vecinities.contains(&CardinalDirections::E) {
+            if !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && !lava_vecinities.contains(&CardinalDirections::NW)
+                && !lava_vecinities.contains(&CardinalDirections::SW)
             {
                 index = 11 * 1 + 2;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && !lava_vecinities.contains(&LavaVecinity::NW)
-                && lava_vecinities.contains(&LavaVecinity::SW)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && !lava_vecinities.contains(&CardinalDirections::NW)
+                && lava_vecinities.contains(&CardinalDirections::SW)
             {
                 index = 11 * 1 + 7;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && lava_vecinities.contains(&LavaVecinity::NW)
-                && !lava_vecinities.contains(&LavaVecinity::SW)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && lava_vecinities.contains(&CardinalDirections::NW)
+                && !lava_vecinities.contains(&CardinalDirections::SW)
             {
                 index = 11 * 2 + 7;
-            } else if !lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && lava_vecinities.contains(&LavaVecinity::NW)
-                && lava_vecinities.contains(&LavaVecinity::SW)
+            } else if !lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && lava_vecinities.contains(&CardinalDirections::NW)
+                && lava_vecinities.contains(&CardinalDirections::SW)
             {
                 index = 11 * 4 + 7;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 1 + 3;
-            } else if lava_vecinities.contains(&LavaVecinity::W)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && lava_vecinities.contains(&LavaVecinity::S)
+            } else if lava_vecinities.contains(&CardinalDirections::W)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 2 + 3;
             }
-        } else if lava_vecinities.contains(&LavaVecinity::W) {
-            if !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && !lava_vecinities.contains(&LavaVecinity::NE)
-                && !lava_vecinities.contains(&LavaVecinity::SE)
+        } else if lava_vecinities.contains(&CardinalDirections::W) {
+            if !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && !lava_vecinities.contains(&CardinalDirections::NE)
+                && !lava_vecinities.contains(&CardinalDirections::SE)
             {
                 index = 11 * 1 + 0;
-            } else if !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && lava_vecinities.contains(&LavaVecinity::NE)
-                && lava_vecinities.contains(&LavaVecinity::SE)
+            } else if !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && lava_vecinities.contains(&CardinalDirections::NE)
+                && lava_vecinities.contains(&CardinalDirections::SE)
             {
                 index = 11 * 4 + 4;
-            } else if !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && lava_vecinities.contains(&LavaVecinity::NE)
-                && !lava_vecinities.contains(&LavaVecinity::SE)
+            } else if !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && lava_vecinities.contains(&CardinalDirections::NE)
+                && !lava_vecinities.contains(&CardinalDirections::SE)
             {
                 index = 11 * 2 + 4;
-            } else if !lava_vecinities.contains(&LavaVecinity::E)
-                && !lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::S)
-                && !lava_vecinities.contains(&LavaVecinity::NE)
-                && lava_vecinities.contains(&LavaVecinity::SE)
+            } else if !lava_vecinities.contains(&CardinalDirections::E)
+                && !lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::S)
+                && !lava_vecinities.contains(&CardinalDirections::NE)
+                && lava_vecinities.contains(&CardinalDirections::SE)
             {
                 index = 11 * 1 + 4;
-            } else if lava_vecinities.contains(&LavaVecinity::E)
-                && lava_vecinities.contains(&LavaVecinity::N)
-                && !lava_vecinities.contains(&LavaVecinity::SW)
-                && !lava_vecinities.contains(&LavaVecinity::SE)
-                && !lava_vecinities.contains(&LavaVecinity::S)
+            } else if lava_vecinities.contains(&CardinalDirections::E)
+                && lava_vecinities.contains(&CardinalDirections::N)
+                && !lava_vecinities.contains(&CardinalDirections::SW)
+                && !lava_vecinities.contains(&CardinalDirections::SE)
+                && !lava_vecinities.contains(&CardinalDirections::S)
             {
                 index = 11 * 0 + 3;
-            } else if lava_vecinities.contains(&LavaVecinity::E)
-                && lava_vecinities.contains(&LavaVecinity::S)
-                && !lava_vecinities.contains(&LavaVecinity::NW)
-                && !lava_vecinities.contains(&LavaVecinity::NE)
-                && !lava_vecinities.contains(&LavaVecinity::N)
+            } else if lava_vecinities.contains(&CardinalDirections::E)
+                && lava_vecinities.contains(&CardinalDirections::S)
+                && !lava_vecinities.contains(&CardinalDirections::NW)
+                && !lava_vecinities.contains(&CardinalDirections::NE)
+                && !lava_vecinities.contains(&CardinalDirections::N)
             {
                 index = 11 * 2 + 3;
             }
@@ -382,8 +382,8 @@ pub fn get_index_from_vecinity(lava_vecinities: &HashSet<LavaVecinity>) -> usize
     index
 }
 
-fn get_lava_vecinities(map: &Map, tile_pos: &IVec2) -> Option<HashSet<LavaVecinity>> {
-    let mut lava_vecinity_hash: HashSet<LavaVecinity> = HashSet::new();
+fn get_lava_vecinities(map: &Map, tile_pos: &IVec2) -> Option<HashSet<CardinalDirections>> {
+    let mut lava_vecinity_hash: HashSet<CardinalDirections> = HashSet::new();
 
     for i in -1..=1 {
         for j in -1..=1 {
@@ -396,28 +396,28 @@ fn get_lava_vecinities(map: &Map, tile_pos: &IVec2) -> Option<HashSet<LavaVecini
                 if tile_type == TilesType::Lava {
                     match tuple {
                         (-1, 1) => {
-                            lava_vecinity_hash.insert(LavaVecinity::NW);
+                            lava_vecinity_hash.insert(CardinalDirections::NW);
                         }
                         (0, 1) => {
-                            lava_vecinity_hash.insert(LavaVecinity::N);
+                            lava_vecinity_hash.insert(CardinalDirections::N);
                         }
                         (1, 1) => {
-                            lava_vecinity_hash.insert(LavaVecinity::NE);
+                            lava_vecinity_hash.insert(CardinalDirections::NE);
                         }
                         (-1, 0) => {
-                            lava_vecinity_hash.insert(LavaVecinity::W);
+                            lava_vecinity_hash.insert(CardinalDirections::W);
                         }
                         (1, 0) => {
-                            lava_vecinity_hash.insert(LavaVecinity::E);
+                            lava_vecinity_hash.insert(CardinalDirections::E);
                         }
                         (-1, -1) => {
-                            lava_vecinity_hash.insert(LavaVecinity::SW);
+                            lava_vecinity_hash.insert(CardinalDirections::SW);
                         }
                         (0, -1) => {
-                            lava_vecinity_hash.insert(LavaVecinity::S);
+                            lava_vecinity_hash.insert(CardinalDirections::S);
                         }
                         (1, -1) => {
-                            lava_vecinity_hash.insert(LavaVecinity::SE);
+                            lava_vecinity_hash.insert(CardinalDirections::SE);
                         }
                         (_, _) => (),
                     }

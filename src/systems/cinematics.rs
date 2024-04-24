@@ -22,7 +22,7 @@ pub fn movable_system(
 
         if let Ok(mut transform) = transform {
             if let Ok(mut facing_direction) = facing_direction {
-                facing_direction.0 = wants_to_move.destination.normalize_or_zero().clone();
+                facing_direction.face_to_vec2(wants_to_move.destination);
             }
             if map.in_bound(&wants_to_move.destination)
                 && (map.tile_can_enter_tile(&wants_to_move.destination) || can_fly.is_ok())

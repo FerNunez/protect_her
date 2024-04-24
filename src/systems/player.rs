@@ -1,8 +1,5 @@
 use crate::prelude::*;
-use bevy::{
-    input::mouse,
-    math::bounding::{Aabb2d, BoundingCircle, IntersectsVolume},
-};
+use bevy::math::bounding::{Aabb2d, BoundingCircle, IntersectsVolume};
 
 fn get_mouse_pos_from_origin(
     mouse_position_from_window: Vec2,
@@ -268,27 +265,44 @@ pub fn player_laser_hit_enemy_system(
 pub fn player_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
+    game_atlases: Res<GameAtlaseLayouts>,
     mut player_state: ResMut<PlayerState>,
 ) {
     if !player_state.alive {
+        let player_animation = PlayerAnimation {
+            current_state: PlayerAnimationState::Idle,
+            moving_down: Animation::new_from_millis(0, 3, 200),
+            moving_up: Animation::new_from_millis(6, 9, 200),
+            moving_side: Animation::new_from_millis(12, 15, 200),
+            idle: Animation::new_from_millis(0, 1, 300),
+        };
+
+        let animation = Animation::new(0, 1, 300);
+
         commands
-            .spawn(SpriteBundle {
-                texture: game_textures.player.clone(),
+            .spawn(SpriteSheetBundle {
                 transform: Transform::from_xyz(
                     (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0 / 2) as f32,
                     (MAP_SIZE_IN_TILES.1 * TILE_SIZE.1 / 2) as f32,
                     1.0,
-                )
-                .with_scale(Vec3::new(EGG_SCALE, EGG_SCALE, 0.)),
+                ),
+                texture: game_textures.player_animation.clone(),
+                atlas: TextureAtlas {
+                    layout: game_atlases.player_animation.clone(),
+                    index: animation.first_index,
+                },
                 ..Default::default()
             })
+            .insert(player_animation)
+            .insert(animation)
             .insert(Player)
             .insert(Movable)
-            .insert(FacingDirection(Vec2::ZERO))
+            .insert(FacingDirection::from(Vec2::ZERO))
             .insert(SpriteSize::from(EGG_SIZE))
             .insert(Velocity { x: 0., y: 0. })
             .insert(CanWallRide)
             .insert(CanDash);
+
         player_state.spawned();
     }
 }
@@ -464,7 +478,54 @@ pub fn player_pickup_skill_system(
         }
     }
 }
-pub fn player_update_animation(player_query: Query<(&FacingDirection, &Velocity), With<Player>>){
 
+pub fn player_update_animation(
+    mut player_query: Query<
+        (
+            //&FacingDirection,
+            &Velocity,
+            //&mut PlayerAnimation,
+            &mut TextureAtlas,
+            &mut Animation,
+        ),
+        With<Player>,
+    >,
+) {
+    //if let Ok((facing_direction, velocity, player_animation, mut animation)) =
 
+    if let Ok((velocity, mut texture, mut animation)) = player_query.get_single_mut() {
+        info!("Player_update_anim");
+        let mut new_animation: Option<Animation> = None;
+        if velocity.x == 0. {
+            if velocity.y < 0. {
+                info!("vel y> 0");
+                new_animation = Some(Animation::new_from_millis(0, 3, 200));
+            } else if velocity.y > 0. {
+                info!("vel y < 0");
+                new_animation = Some(Animation::new_from_millis(6, 9, 200));
+            } else {
+                info!("vel y = 0");
+                new_animation = Some(Animation::new(0, 1, 400));
+            }
+        } else if velocity.x > 0. {
+            info!("vel x > 0");
+            let mut animation = Animation::new(12, 15, 200);
+            animation.set_flip(true);
+            new_animation = Some(animation);
+        } else {
+            info!("vel x < 0");
+            new_animation = Some(Animation::new(12, 15, 200));
+        };
+
+        if let Some(new_animation) = new_animation {
+            info!("New animation: {:?}", new_animation.first_index);
+            if !new_animation.same_index(&animation) {
+                info!("Animation Updated");
+
+                texture.index = new_animation.first_index;
+                *animation = new_animation;
+            }
+        } else {
+        }
+    }
 }

@@ -120,7 +120,7 @@ fn main() {
         .add_systems(
             Update,
             (
-                //zoom_system,
+                zoom_system,
                 move_camera_system,
                 projectile_movement_system,
                 //user_mouse_handler_zoom_event_system,
