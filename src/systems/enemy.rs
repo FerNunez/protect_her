@@ -58,7 +58,7 @@ pub fn enemy_spawn_system(
                 .insert(CanFly)
                 .id();
 
-            let tail_animation = Animation::new(0, 6, 200);
+            let tail_animation = Animation::new(0, 6);
 
             let tail = commands
                 .spawn(SpriteSheetBundle {
@@ -73,6 +73,7 @@ pub fn enemy_spawn_system(
                 })
                 .insert(CanFly)
                 .insert(tail_animation)
+                .insert(AnimationTimer::new_from_millis(100))
                 .id();
 
             commands.entity(sperm).push_children(&[tail]);

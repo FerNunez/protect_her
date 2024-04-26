@@ -17,11 +17,11 @@ pub fn animate_being_hitted(
 
 pub fn animate_sprite(
     time: Res<Time>,
-    mut query: Query<(&mut Animation, &mut Sprite, &mut TextureAtlas)>,
+    mut query: Query<(&mut Animation, &mut AnimationTimer, &mut Sprite, &mut TextureAtlas)>,
 ) {
-    for (mut animation, mut sprite, mut atlas) in &mut query {
-        animation.timer.tick(time.delta());
-        if animation.timer.just_finished() {
+    for ( animation, mut animation_timer, mut sprite, mut atlas) in &mut query {
+        animation_timer.timer.tick(time.delta());
+        if animation_timer.timer.just_finished() {
             atlas.index = if atlas.index == animation.last_index {
                 animation.first_index
             } else {
@@ -29,7 +29,6 @@ pub fn animate_sprite(
             };
         }
 
-            sprite.flip_x = animation.flip;
-
+        sprite.flip_x = animation.flip;
     }
 }

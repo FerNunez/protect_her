@@ -193,28 +193,34 @@ pub struct HasCollided;
 #[derive(Component)]
 pub struct CanFly;
 
-#[derive(Clone, Component)]
+#[derive(Clone, Component, Hash)]
 pub struct Animation {
     pub first_index: usize,
     pub last_index: usize,
     pub flip: bool,
+}
+
+#[derive(Clone, Component)]
+pub struct AnimationTimer {
     pub timer: Timer,
 }
 
+impl AnimationTimer {
+    pub fn new_from_millis(miliseconds: u64) -> Self {
+        Self {
+            timer: Timer::new(Duration::from_millis(miliseconds), TimerMode::Repeating),
+        }
+    }
+}
+
 impl Animation {
-    pub fn new_from_millis(first_index: usize, last_index: usize, miliseconds: u64) -> Self {
+    pub fn new(first_index: usize, last_index: usize) -> Self {
         Self {
             first_index,
             last_index,
-            timer: Timer::new(Duration::from_millis(miliseconds), TimerMode::Repeating),
             flip: false,
         }
     }
-
-    pub fn new(first_index: usize, last_index: usize, milliseconds: u64) -> Self {
-        Self::new_from_millis(first_index, last_index, milliseconds)
-    }
-
     pub fn same_index(&self, rhs: &Animation) -> bool {
         if self.first_index == rhs.first_index && self.last_index == rhs.last_index {
             return true;
@@ -222,13 +228,8 @@ impl Animation {
 
         return false;
     }
-    pub fn set_flip(&mut self, val: bool){
+    pub fn set_flip(&mut self, val: bool) {
         self.flip = val;
-    }
-}
-impl Default for Animation {
-    fn default() -> Self {
-        Self::new_from_millis(0, 0, 100)
     }
 }
 
@@ -242,8 +243,7 @@ pub struct UpdateTile {
     pub tiletype: TilesType,
 }
 
-
-#[derive(Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Component,Clone, Copy, PartialEq, PartialOrd)]
 pub enum PlayerAnimationState {
     MovingDown,
     MovingUp,
@@ -252,6 +252,7 @@ pub enum PlayerAnimationState {
     Idle,
     FacingDown,
 }
+
 #[derive(Component)]
 pub struct PlayerAnimation {
     pub current_state: PlayerAnimationState,
@@ -267,5 +268,12 @@ pub enum Side {
     Center,
 }
 
-#[derive(Component)]
-pub struct FlipRender;
+#[derive(Component, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub enum AnimationState {
+    MovingDown,
+    MovingUp,
+    MovingLeft,
+    MovingRight,
+    Idle,
+    FacingDown,
+}

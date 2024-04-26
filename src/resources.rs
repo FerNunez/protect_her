@@ -64,9 +64,6 @@ pub struct LastMouse {
     pub pos: Vec2,
 }
 #[derive(Resource)]
-pub struct PlayerAnimations{
-    pub moving_down: Animation,
-    pub moving_up: Animation,
-    pub moving_side: Animation,
-    pub idle: Animation,
+pub struct AnimationsList {
+    pub player: HashSet<Animation>,
 }

@@ -269,15 +269,7 @@ pub fn player_spawn_system(
     mut player_state: ResMut<PlayerState>,
 ) {
     if !player_state.alive {
-        let player_animation = PlayerAnimation {
-            current_state: PlayerAnimationState::Idle,
-            moving_down: Animation::new_from_millis(0, 3, 200),
-            moving_up: Animation::new_from_millis(6, 9, 200),
-            moving_side: Animation::new_from_millis(12, 15, 200),
-            idle: Animation::new_from_millis(0, 1, 300),
-        };
-
-        let animation = Animation::new(0, 1, 300);
+        let animation = Animation::new(0, 1);
 
         commands
             .spawn(SpriteSheetBundle {
@@ -293,8 +285,9 @@ pub fn player_spawn_system(
                 },
                 ..Default::default()
             })
-            .insert(player_animation)
+            .insert(PlayerAnimationState::Idle)
             .insert(animation)
+            .insert(AnimationTimer::new_from_millis(300))
             .insert(Player)
             .insert(Movable)
             .insert(FacingDirection::from(Vec2::ZERO))
@@ -499,22 +492,24 @@ pub fn player_update_animation(
         if velocity.x == 0. {
             if velocity.y < 0. {
                 info!("vel y> 0");
-                new_animation = Some(Animation::new_from_millis(0, 3, 200));
+                new_animation = Some(Animation::new(0, 3));
             } else if velocity.y > 0. {
                 info!("vel y < 0");
-                new_animation = Some(Animation::new_from_millis(6, 9, 200));
+                new_animation = Some(Animation::new(6, 9));
             } else {
                 info!("vel y = 0");
-                new_animation = Some(Animation::new(0, 1, 400));
+                new_animation = Some(Animation::new(0, 1));
             }
         } else if velocity.x > 0. {
             info!("vel x > 0");
-            let mut animation = Animation::new(12, 15, 200);
+            let mut animation = Animation::new(12, 15);
             animation.set_flip(true);
             new_animation = Some(animation);
         } else {
             info!("vel x < 0");
-            new_animation = Some(Animation::new(12, 15, 200));
+            let mut animation = Animation::new(12, 15);
+            animation.set_flip(false);
+            new_animation = Some(animation);
         };
 
         if let Some(new_animation) = new_animation {
@@ -524,6 +519,7 @@ pub fn player_update_animation(
 
                 texture.index = new_animation.first_index;
                 *animation = new_animation;
+                info!("Animation {:?}", animation.flip);
             }
         } else {
         }

@@ -1,3 +1,5 @@
+use bevy::utils::HashMap;
+
 use crate::prelude::*;
 
 pub fn setup_system(
@@ -68,7 +70,10 @@ pub fn setup_system(
 
     commands.insert_resource(PlayerState::default());
 
-    let game_state = GameState { zoom: 0.65, coins: 0 };
+    let game_state = GameState {
+        zoom: 0.65,
+        coins: 0,
+    };
     commands.insert_resource(game_state);
 
     commands.insert_resource(EnemyCount { alive: 0, dead: 0 });
@@ -80,6 +85,34 @@ pub fn setup_system(
 
     commands.insert_resource(WaveLevel(0));
     commands.insert_resource(LastMouse { pos: Vec2::ZERO });
+
+    //let mut player_animations = HashMap::new();
+    //player_animations.insert(
+    //    AnimationState::MovingRight,
+    //    Animation::new_from_millis(0, 3, 200),
+    //);
+    //pzayer_animations.insert(AnimationState::MovingRight, Animation::new_from_millis());
+    //if velocity.x == 0. {
+    //    if velocity.y < 0. {
+    //        info!("vel y> 0");
+    //        new_animation = Some(Animation::new_from_millis(0, 3, 200));
+    //    } else if velocity.y > 0. {
+    //        info!("vel y < 0");
+    //        new_animation = Some(Animation::new_from_millis(6, 9, 200));
+    //    } else {
+    //        info!("vel y = 0");
+    //        new_animation = Some(Animation::new(0, 1, 400));
+    //    }
+    //} else if velocity.x > 0. {
+    //    info!("vel x > 0");
+    //    let mut animation = Animation::new(12, 15, 200);
+    //    animation.set_flip(true);
+    //    new_animation = Some(animation);
+    //} else {
+    //    info!("vel x < 0");
+    //    new_animation = Some(Animation::new(12, 15, 200));
+    //};
+    //
     //    commands.spawn((
     //        TextBundle::from_sections([
     //            TextSection::new(
