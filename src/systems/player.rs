@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use bevy::math::bounding::{Aabb2d, BoundingCircle, IntersectsVolume};
 
-fn get_mouse_pos_from_origin(
+pub fn get_mouse_pos_from_origin(
     mouse_position_from_window: Vec2,
     window_size: Vec2,
     camera_position: Vec3,
@@ -294,6 +294,7 @@ pub fn player_spawn_system(
             .insert(SpriteSize::from(EGG_SIZE))
             .insert(Velocity { x: 0., y: 0. })
             .insert(CanWallRide)
+            .insert(LastDirection::from((0., 0.)))
             .insert(CanDash);
 
         player_state.spawned();
@@ -362,6 +363,8 @@ pub fn player_modify_map_system(
     camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
     mut last_mouse: ResMut<LastMouse>,
     map: Res<Map>,
+
+    // TODO: zoom: Res<GameState>,
     game_textures: Res<GameTextures>, // DEBUG
 ) {
     if let Ok((player_entity, _player_tf)) = player_in_edit_query.get_single() {
@@ -487,39 +490,39 @@ pub fn player_update_animation(
     //if let Ok((facing_direction, velocity, player_animation, mut animation)) =
 
     if let Ok((velocity, mut texture, mut animation)) = player_query.get_single_mut() {
-        info!("Player_update_anim");
+        //info!("Player_update_anim");
         let mut new_animation: Option<Animation> = None;
         if velocity.x == 0. {
             if velocity.y < 0. {
-                info!("vel y> 0");
+                //info!("vel y> 0");
                 new_animation = Some(Animation::new(0, 3));
             } else if velocity.y > 0. {
-                info!("vel y < 0");
+                //info!("vel y < 0");
                 new_animation = Some(Animation::new(6, 9));
             } else {
-                info!("vel y = 0");
+                //info!("vel y = 0");
                 new_animation = Some(Animation::new(0, 1));
             }
         } else if velocity.x > 0. {
-            info!("vel x > 0");
+            //info!("vel x > 0");
             let mut animation = Animation::new(12, 15);
             animation.set_flip(true);
             new_animation = Some(animation);
         } else {
-            info!("vel x < 0");
+            //info!("vel x < 0");
             let mut animation = Animation::new(12, 15);
             animation.set_flip(false);
             new_animation = Some(animation);
         };
 
         if let Some(new_animation) = new_animation {
-            info!("New animation: {:?}", new_animation.first_index);
+            //info!("New animation: {:?}", new_animation.first_index);
             if !new_animation.same_index(&animation) {
-                info!("Animation Updated");
+                //info!("Animation Updated");
 
                 texture.index = new_animation.first_index;
                 *animation = new_animation;
-                info!("Animation {:?}", animation.flip);
+                //info!("Animation {:?}", animation.flip);
             }
         } else {
         }

@@ -65,6 +65,18 @@ impl From<(f32, f32)> for SpriteSize {
         SpriteSize(Vec2::new(val.0, val.1))
     }
 }
+
+#[derive(Component)]
+pub struct AliveDuration(pub Duration);
+
+#[derive(Component)]
+pub struct LastDirection(pub Vec2);
+impl From<(f32, f32)> for LastDirection {
+    fn from(val: (f32, f32)) -> Self {
+        Self(Vec2::new(val.0, val.1))
+    }
+}
+
 #[derive(Component)]
 pub struct FacingDirection {
     pub cardinal_coordinate: CardinalDirections,
@@ -243,7 +255,7 @@ pub struct UpdateTile {
     pub tiletype: TilesType,
 }
 
-#[derive(Component,Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Component, Clone, Copy, PartialEq, PartialOrd)]
 pub enum PlayerAnimationState {
     MovingDown,
     MovingUp,
@@ -277,3 +289,22 @@ pub enum AnimationState {
     Idle,
     FacingDown,
 }
+
+#[derive(Component)]
+pub struct Target(pub Vec2);
+
+#[derive(Component)]
+pub struct Egg;
+
+#[derive(Component)]
+pub struct SpeedScalingInTime(pub f32);
+
+#[derive(Component)]
+pub struct RotationSpeed(pub f32);
+
+#[derive(Component)]
+pub struct PullForce(pub Vec2);
+
+#[derive(Component)]
+pub struct Embrion;
+

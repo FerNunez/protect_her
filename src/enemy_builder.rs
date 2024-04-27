@@ -14,9 +14,9 @@ impl Plugin for EnemyPlugin {
                     //    1. / ENEMY_SPAWN_RATE_PER_MIN,
                     //))),
                     enemy_spawn_system.run_if(on_timer(Duration::from_secs(WAVE_TIMER))),
-                    enemy_target_player.run_if(resource_exists::<PlayerState>),
+                    enemy_target_egg.run_if(resource_exists::<PlayerState>),
+                    enemy_speed_scaling_system,
                 ),
             );
     }
 }
-

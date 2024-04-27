@@ -7,6 +7,8 @@ pub struct WinSize {
     pub h: f32,
 }
 
+// TODO: Review logic of zoom + clicks
+
 #[derive(Resource)]
 pub struct GameState {
     pub zoom: f32,
@@ -23,6 +25,11 @@ pub struct GameTextures {
     pub skill: Handle<Image>,
     pub floor: Handle<Image>,
     pub wall: Handle<Image>,
+    pub egg_tentacles: Handle<Image>,
+    pub egg_blue: Handle<Image>,
+    pub egg_yellow: Handle<Image>,
+    pub egg_red: Handle<Image>,
+    pub egg_eye: Handle<Image>,
     // debug
     pub pixel: Handle<Image>,
     pub map_texture: Handle<Image>,
@@ -41,7 +48,10 @@ pub struct GameAtlaseLayouts {
 pub struct PlayerState {
     pub alive: bool,
 }
-
+#[derive(Resource)]
+pub struct EggState {
+    pub alive: bool,
+}
 #[derive(Resource)]
 pub struct EnemyCount {
     pub alive: u32,

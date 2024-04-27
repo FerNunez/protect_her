@@ -1,5 +1,16 @@
 use crate::prelude::*;
 
+pub fn enemy_speed_scaling_system(
+    time: Res<Time>,
+    mut velocity_query: Query<(&AliveDuration, &mut SpeedScalingInTime)>,
+) {
+    for (alive_duration, mut speed_scaling) in velocity_query.iter_mut() {
+        let speed_scale = (time.elapsed() - alive_duration.0).as_secs_f32() * 0.0001;
+
+        speed_scaling.0 += speed_scale;
+    }
+}
+
 pub fn enemy_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
@@ -9,6 +20,7 @@ pub fn enemy_spawn_system(
     camera_query: Query<&Transform, (With<Camera>, Without<Player>)>,
     win_size: Res<WinSize>,
     mut wave_level: ResMut<WaveLevel>,
+    time: Res<Time>,
 ) {
     let spawn_number = wave_level.0 * wave_level.0 * ENEMY_SPAWN_RATE;
 
@@ -43,10 +55,10 @@ pub fn enemy_spawn_system(
             let sperm = commands
                 .spawn(SpriteBundle {
                     texture: game_textures.enemy.clone(),
-                    transform: Transform::from_xyz(x, y, 1.0).with_scale(Vec3::new(
+                    transform: Transform::from_xyz(x, y, 2.0).with_scale(Vec3::new(
                         SPERM_SCALE,
                         SPERM_SCALE,
-                        0.,
+                        1.,
                     )),
                     ..Default::default()
                 })
@@ -56,6 +68,8 @@ pub fn enemy_spawn_system(
                 .insert(SpriteSize::from(SPERM_SIZE))
                 .insert(Health(SPERM_HEALTH))
                 .insert(CanFly)
+                .insert(SpeedScalingInTime(20.))
+                .insert(AliveDuration(time.elapsed().clone()))
                 .id();
 
             let tail_animation = Animation::new(0, 6);
@@ -85,23 +99,33 @@ pub fn enemy_spawn_system(
 }
 
 // drunk movement
-pub fn enemy_target_player(
+pub fn enemy_target_egg(
     time: Res<Time>,
     mut commands: Commands,
-    player_state: Res<PlayerState>,
-    mut enemy_query: Query<(Entity, &Enemy, &mut Velocity, &mut Transform), Without<Player>>,
-    player_query: Query<&Transform, With<Player>>,
+    egg_state: Res<PlayerState>,
+    mut enemy_query: Query<
+        (
+            Entity,
+            &Enemy,
+            &mut Velocity,
+            &mut Transform,
+            &SpeedScalingInTime,
+        ),
+        Without<Egg>,
+    >,
+    emmbrion_query: Query<&GlobalTransform, (With<Embrion>, Without<Egg>, Without<Enemy>, Without<Player>)>,
 ) {
-    if player_state.alive {
-        if let Ok(player_transform) = player_query.get_single() {
-            for (enemy_entity, enemy, mut enemy_velocity, enemy_transform) in enemy_query.iter_mut()
+    if egg_state.alive {
+        if let Ok(egg_transform) = emmbrion_query.get_single() {
+            for (enemy_entity, enemy, mut enemy_velocity, enemy_transform, speed_scaling) in
+                enemy_query.iter_mut()
             {
-                //let (destination, angle) = enemy.bicycle_model(enemy_transform, player_transform.translation.xy());
+                //let (destination, angle) = enemy.bicycle_model(enemy_transform, egg_transform.translation.xy());
                 let (direction_vector, angle) =
-                    enemy.perfect_model(&enemy_transform, &player_transform.translation.xy());
+                    enemy.perfect_model(&enemy_transform, &egg_transform.translation().xy());
 
-                enemy_velocity.x = direction_vector.normalize_or_zero().x * SPERM_SPEED;
-                enemy_velocity.y = -direction_vector.normalize_or_zero().y * SPERM_SPEED;
+                enemy_velocity.x = direction_vector.normalize_or_zero().x * speed_scaling.0;
+                enemy_velocity.y = -direction_vector.normalize_or_zero().y * speed_scaling.0;
                 let delta_time = time.delta().as_secs_f32();
 
                 let delta = Vec2::new(enemy_velocity.x * delta_time, enemy_velocity.y * delta_time);

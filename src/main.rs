@@ -1,10 +1,14 @@
 mod components;
+
+mod egg;
+
 mod enemy_builder;
 mod map;
 mod map_builder;
 mod player_builder;
 mod resources;
 mod systems;
+mod weapons;
 mod prelude {
 
     pub use bevy::{
@@ -28,17 +32,18 @@ mod prelude {
     pub const TIME_STEP: f32 = 1. / 60.;
     pub const BASE_SPEED: f32 = 300.;
     pub const SCREEN_SIZE: (i32, i32) = (2560, 1440);
-    pub const MAP_SIZE_IN_TILES: (i32, i32) = (100, 100);
+    pub const MAP_SIZE_IN_TILES: (i32, i32) = (400, 300);
     pub const TILE_SIZE: (i32, i32) = (32, 32);
     pub const TILE_SCALE: i32 = 1;
 
     pub const EGG_SPRITE: &str = "matrix.png";
     pub const EGG_SIZE: (f32, f32) = (32., 32.);
     pub const EGG_SCALE: f32 = 1.;
+    pub const EGG_SPEED: f32 = 5.;
 
     pub const SPERM: &str = "sperm_only_head.png";
     pub const SPERM_SCALE: f32 = 1.;
-    pub const SPERM_SPEED: f32 = 50.0;
+    pub const SPERM_SPEED: f32 = 1.5;
     pub const SPERM_SIZE: (f32, f32) = (12., 8.0);
     pub const SPERM_HEALTH: f32 = 10.;
 
@@ -48,12 +53,14 @@ mod prelude {
     //pub const SPERM_SIZE: (f32, f32) = (144., 75.0);
     //pub const SPERM_HEALTH: f32 = 10.;
 
-    pub const PLAYER_LASER_SPRITE: &str = "laser_blue_18_32.png";
-    pub const PLAYER_LASER_SIZE: (f32, f32) = (18., 32.);
-    pub const PLAYER_LASER_SPEED: f32 = 2.3;
+    //pub const PLAYER_LASER_SPRITE: &str = "laser_blue_18_32.png";
+    pub const PLAYER_LASER_SPRITE: &str = "light.png";
+    pub const PLAYER_LASER_SIZE: (f32, f32) = (4., 32.);
+    pub const PLAYER_LASER_SPEED: f32 = 10.3;
     pub const PLAYER_DAMAGE: f32 = 2.;
     pub const PLAYER_LASER_SCALE: f32 = 1.;
     pub const PLAYER_SPEED: f32 = 200.0;
+    pub const PLAYER_LASER_DESPAWN_DIST: f32 = 3000.;
 
     pub const FRAMES_HITTED: u16 = 10;
 
@@ -78,20 +85,20 @@ mod prelude {
 use crate::systems::camera::*;
 use crate::systems::setup::*;
 
+use crate::projectile::*;
 use crate::systems::animation::*;
 use crate::systems::cinematics::*;
 use crate::systems::coin::*;
 use crate::systems::input_handler::*;
+use crate::systems::map_render::*;
 use crate::systems::player::*;
 use crate::systems::skill::*;
 use crate::systems::ui::*;
-use crate::systems::map_render::*;
 
 use crate::enemy_builder::*;
 use crate::player_builder::*;
+use egg::*;
 use prelude::map_render::render_map_system;
-use prelude::projectile::despawn_projectile_system;
-use prelude::projectile::projectile_movement_system;
 use prelude::*;
 
 fn main() {
@@ -105,7 +112,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Protect her!".to_string(),
-                resolution: (SCREEN_SIZE.0 as f32 / 2., SCREEN_SIZE.1 as f32 / 2.).into(),
+                resolution: (SCREEN_SIZE.0 as f32 * 0.7, SCREEN_SIZE.1 as f32 * 0.7).into(),
                 //position: WindowPosition::At(IVec2::new(2 * SCREEN_SIZE.1 + 10, 10)),
                 position: WindowPosition::At(IVec2::new(10, 10)),
                 ..default()
@@ -116,14 +123,25 @@ fn main() {
         .add_plugins(EnemyPlugin)
         .add_systems(PreStartup, setup_system)
         .add_systems(Startup, render_map_system)
-        .add_systems(PreUpdate, (despawn_projectile_system, update_render_map_system))
+        .add_systems(Startup, egg_spawn_system)
+        .add_systems(
+            PreUpdate,
+            (
+                despawn_projectile_collision_system,
+                despawn_projectile_position_system,
+                update_render_map_system,
+            ),
+        )
         .add_systems(
             Update,
             (
+                egg_target_move,
                 zoom_system,
                 move_camera_system,
                 projectile_movement_system,
-                //user_mouse_handler_zoom_event_system,
+                user_mouse_handler_zoom_event_system,
+                rotation_egg_parts,
+                pull_force_system,
                 //player_laser_hit_enemy_system,
                 //animate_being_hitted,
                 //spawn_coin_system,

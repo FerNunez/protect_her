@@ -58,6 +58,11 @@ pub fn setup_system(
         map_texture: asset_server.load("map_edit.png"),
         enemy_tail_animation: asset_server.load("enemy_tail_animation.png"),
         player_animation: asset_server.load("player_animation.png"),
+        egg_tentacles: asset_server.load("egg_tentacles_only.png"),
+        egg_blue: asset_server.load("egg_blue_only.png"),
+        egg_red: asset_server.load("egg_red_only.png"),
+        egg_yellow: asset_server.load("egg_yellow_only.png"),
+        egg_eye: asset_server.load("egg_eye_only.png"),
     };
     commands.insert_resource(game_texture);
 
@@ -69,9 +74,11 @@ pub fn setup_system(
     commands.insert_resource(game_atlases);
 
     commands.insert_resource(PlayerState::default());
+    commands.insert_resource(EggState::default());
 
     let game_state = GameState {
-        zoom: 0.65,
+        //zoom: 0.65,
+        zoom: 1.,
         coins: 0,
     };
     commands.insert_resource(game_state);
