@@ -68,6 +68,13 @@ impl Map {
             && self.tiles[pos_to_map_idx(pos.x + 26., pos.y + 26.)] != TilesType::Lava
     }
 }
+pub fn world_position_to_tile_xy(world_position: Vec2) -> IVec2 {
+    let (x, y) = (
+        world_position.x.round() as i32,
+        world_position.y.round() as i32,
+    );
+    IVec2::new(x / TILE_SIZE.0, y / TILE_SIZE.1)
+}
 pub fn pos_to_map_idx(x: f32, y: f32) -> usize {
     let (x, y) = (x.round() as i32, y.round() as i32);
     tile_xy_to_map_idx(x / TILE_SIZE.0, y / TILE_SIZE.1)
@@ -77,6 +84,7 @@ pub fn tile_xy_to_map_idx(map_x: i32, map_y: i32) -> usize {
     //info!("a tile: {map_x},{map_y}");
     ((map_y * MAP_SIZE_IN_TILES.0) + map_x) as usize
 }
+
 
 #[test]
 fn not_in_bound() {

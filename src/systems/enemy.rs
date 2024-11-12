@@ -30,32 +30,38 @@ pub fn enemy_spawn_system(
 
             //// compoute the start x/y
             //let x = if rng.gen_bool(0.5) { w_span } else { -w_span };
-            let mut x = (rng.gen_range(0..MAP_SIZE_IN_TILES.0) * TILE_SIZE.0) as f32;
-            let mut y = (rng.gen_range(0..MAP_SIZE_IN_TILES.1) * TILE_SIZE.1) as f32;
+            //let mut x = (rng.gen_range(0..MAP_SIZE_IN_TILES.0) * TILE_SIZE.0) as f32;
+            //let mut y = (rng.gen_r.ange(0..MAP_SIZE_IN_TILES.1) * TILE_SIZE.1) as f32;
+            let spawn_pos = Vec2::new((MAP_SIZE_IN_TILES.0*TILE_SIZE.0/2) as f32, 0.);
+            let x = rng.gen_range(-SPAWN_AREA_SIZE.0/2..SPAWN_AREA_SIZE.0/2);
+            let y = rng.gen_range(-SPAWN_AREA_SIZE.1/2..SPAWN_AREA_SIZE.1/2);
 
-            if let Ok(camera_tf) = camera_query.get_single() {
-                let camera_left = camera_tf.translation.x - win_size.w / 2.;
-                let camera_right = camera_tf.translation.x + win_size.w / 2.;
+            let x = x as f32+spawn_pos.x;
+            let y = y as f32+spawn_pos.y;
 
-                let camera_top = camera_tf.translation.y + win_size.h / 2.;
-                let camera_bottom = camera_tf.translation.y - win_size.h / 2.;
-                loop {
-                    let pos = Vec2::new(x, y);
-                    let inside_view =
-                        x > camera_left && x < camera_right && y > camera_bottom && y < camera_top;
+            //if let Ok(camera_tf) = camera_query.get_single() {
+            //    let camera_left = camera_tf.translation.x - win_size.w / 2.;
+            //    let camera_right = camera_tf.translation.x + win_size.w / 2.;
 
-                    if map.can_enter_tile(&pos) && !inside_view {
-                        break;
-                    } else {
-                        x = (rng.gen_range(0..MAP_SIZE_IN_TILES.0) * TILE_SIZE.0) as f32;
-                        y = (rng.gen_range(0..MAP_SIZE_IN_TILES.1) * TILE_SIZE.1) as f32;
-                    }
-                }
-            }
+            //    let camera_top = camera_tf.translation.y + win_size.h / 2.;
+            //    let camera_bottom = camera_tf.translation.y - win_size.h / 2.;
+            //    //loop {
+            //    //    let pos = Vec2::new(x, y);
+            //    //    let inside_view =
+            //    //        x > camera_left && x < camera_right && y > camera_bottom && y < camera_top;
+
+            //    //    if map.can_enter_tile(&pos) && !inside_view {
+            //    //        break;
+            //    //    } else {
+            //    //        x = (rng.gen_range(0..MAP_SIZE_IN_TILES.0) * TILE_SIZE.0) as f32;
+            //    //        y = (rng.gen_range(0..MAP_SIZE_IN_TILES.1) * TILE_SIZE.1) as f32;
+            //    //    }
+            //    //}
+            //}
             let sperm = commands
                 .spawn(SpriteBundle {
                     texture: game_textures.enemy.clone(),
-                    transform: Transform::from_xyz(x, y, 2.0).with_scale(Vec3::new(
+                    transform: Transform::from_xyz(x as f32, y as f32, 2.0).with_scale(Vec3::new(
                         SPERM_SCALE,
                         SPERM_SCALE,
                         1.,
@@ -113,7 +119,10 @@ pub fn enemy_target_egg(
         ),
         Without<Egg>,
     >,
-    emmbrion_query: Query<&GlobalTransform, (With<Embrion>, Without<Egg>, Without<Enemy>, Without<Player>)>,
+    emmbrion_query: Query<
+        &GlobalTransform,
+        (With<Embrion>, Without<Egg>, Without<Enemy>, Without<Player>),
+    >,
 ) {
     if egg_state.alive {
         if let Ok(egg_transform) = emmbrion_query.get_single() {

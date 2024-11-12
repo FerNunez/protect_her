@@ -19,6 +19,7 @@ pub fn egg_spawn_system(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     mut egg_state: ResMut<EggState>,
+    game_state: Res<GameState>,
 ) {
     let mut rng = thread_rng();
     let pull_force = Vec2::new(rng.gen_range(-1.0..=1.0), rng.gen_range(-1.0..1.0));
@@ -55,8 +56,10 @@ pub fn egg_spawn_system(
         .spawn(SpriteBundle {
             texture: game_textures.egg_tentacles.clone(),
             transform: Transform::from_xyz(
-                (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0 / 2) as f32,
-                (MAP_SIZE_IN_TILES.1 * TILE_SIZE.1 / 2) as f32,
+                (game_state.egg_spawn_position.x) as f32,
+                (game_state.egg_spawn_position.y) as f32,
+                //                (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0 / 2) as f32,
+                //                (MAP_SIZE_IN_TILES.1 * TILE_SIZE.1 / 2) as f32,
                 1.01,
             ),
 

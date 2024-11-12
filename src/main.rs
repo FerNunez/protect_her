@@ -46,6 +46,7 @@ mod prelude {
     pub const SPERM_SPEED: f32 = 1.5;
     pub const SPERM_SIZE: (f32, f32) = (12., 8.0);
     pub const SPERM_HEALTH: f32 = 10.;
+    pub const SPAWN_AREA_SIZE: (i32, i32) = (200, 50);
 
     //pub const SPERM: &str = "sperm_32_32.png";
     //pub const SPERM_SCALE: f32 = 1.;
@@ -75,11 +76,11 @@ mod prelude {
     pub const FLOOR_SPRITE: &str = "floor_pattern_dark.png";
     pub const WALL_SPRITE: &str = "map_edit.png";
 
-    pub const CAMERA_WINDOWS_MARGIN: f32 = 275.;
+    pub const CAMERA_MARGIN_RATIO: (f32,f32) = (0.3, 0.3);
 
     pub const MAX_WAVE_LEVEL: i32 = 100;
-    pub const ENEMY_SPAWN_RATE: u32 = 20;
-    pub const WAVE_TIMER: u64 = 10;
+    pub const ENEMY_SPAWN_RATE: u32 = 2;
+    pub const WAVE_TIMER: u64 = 2;
 }
 
 use crate::systems::camera::*;
@@ -112,7 +113,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Protect her!".to_string(),
-                resolution: (SCREEN_SIZE.0 as f32 * 0.7, SCREEN_SIZE.1 as f32 * 0.7).into(),
+                resolution: (SCREEN_SIZE.0 as f32 , SCREEN_SIZE.1 as f32 ).into(),
                 //position: WindowPosition::At(IVec2::new(2 * SCREEN_SIZE.1 + 10, 10)),
                 position: WindowPosition::At(IVec2::new(10, 10)),
                 ..default()
@@ -161,3 +162,16 @@ fn main() {
         )
         .run();
 }
+
+
+
+
+
+// Sperm
+// Moves near ovulus. Random direction. Updates every few seconds.. Longer time, better
+// update. Nearness to ovulus more chance of getting the good direction
+//
+// They cannot reach the land. but converts into animal/player/object. Stats/characteristics
+// depends on how long they have been alive
+//
+//

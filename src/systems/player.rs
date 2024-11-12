@@ -29,12 +29,12 @@ pub fn player_fire_system(
     mouse_button: Res<ButtonInput<MouseButton>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     query: Query<&Transform, (With<Player>, Without<InEdit>)>,
-    camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+    camera_query: Query<(&mut Transform, &OrthographicProjection), (With<Camera>, Without<Player>)>,
 ) {
     if let Ok(player_tf) = query.get_single() {
         let player_position = Vec2::new(player_tf.translation.x, player_tf.translation.y);
         // get vector velocity
-        if let Ok(camera_tf) = camera_query.get_single() {
+        if let Ok((camera_tf, ortographic_proj)) = camera_query.get_single() {
             //
             let mouse_position_from_window = match window_query.single().cursor_position() {
                 Some(mouse_pos) => {
@@ -44,7 +44,9 @@ pub fn player_fire_system(
                 None => last_mouse.pos,
             };
 
-            let win_size_gap = Vec2::new(win_size.w, win_size.h);
+            let win_w = ortographic_proj.area.max.x - ortographic_proj.area.min.x;
+            let win_h = ortographic_proj.area.max.y - ortographic_proj.area.min.y;
+            let win_size_gap = Vec2::new(win_w, win_h);
             let mouse_position = get_mouse_pos_from_origin(
                 mouse_position_from_window,
                 win_size_gap,
@@ -267,6 +269,7 @@ pub fn player_spawn_system(
     game_textures: Res<GameTextures>,
     game_atlases: Res<GameAtlaseLayouts>,
     mut player_state: ResMut<PlayerState>,
+    game_state: Res<GameState>,
 ) {
     if !player_state.alive {
         let animation = Animation::new(0, 1);
@@ -274,8 +277,10 @@ pub fn player_spawn_system(
         commands
             .spawn(SpriteSheetBundle {
                 transform: Transform::from_xyz(
-                    (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0 / 2) as f32,
-                    (MAP_SIZE_IN_TILES.1 * TILE_SIZE.1 / 2) as f32,
+                    (game_state.egg_spawn_position.x) as f32,
+                    (game_state.egg_spawn_position.y) as f32,
+                    //                    (MAP_SIZE_IN_TILES.0 * TILE_SIZE.0 / 2) as f32,
+                    //(MAP_SIZE_IN_TILES.1 * TILE_SIZE.1 / 2) as f32,
                     1.0,
                 ),
                 texture: game_textures.player_animation.clone(),
@@ -363,39 +368,52 @@ pub fn player_modify_map_system(
     camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
     mut last_mouse: ResMut<LastMouse>,
     map: Res<Map>,
+    game_state: Res<GameState>,
 
     // TODO: zoom: Res<GameState>,
     game_textures: Res<GameTextures>, // DEBUG
 ) {
     if let Ok((player_entity, _player_tf)) = player_in_edit_query.get_single() {
         if let Ok(camera_tf) = camera_query.get_single() {
-            let mouse_position_from_window = match window_query.single().cursor_position() {
-                Some(mouse_pos) => {
-                    last_mouse.pos = mouse_pos;
-                    mouse_pos
-                }
-                None => last_mouse.pos,
-            };
-            let win_size_gap = Vec2::new(win_size.w, win_size.h);
-            let mouse_position = get_mouse_pos_from_origin(
-                mouse_position_from_window,
-                win_size_gap,
-                camera_tf.translation,
-            );
-            let mouse_poistion_minus_tile =
-                mouse_position + Vec2::new(TILE_SIZE.0 as f32 / 2., TILE_SIZE.1 as f32 / 2.);
-
             if mouse_button.pressed(MouseButton::Left) {
-                if !map.can_enter_tile(&mouse_poistion_minus_tile) {
-                    //info!(
-                    //    "Entt:{:?}, Spawning. UpdateTile: pos: {:?}, asking to Wall",
-                    //    player_entity, mouse_position
-                    //);
-                    commands.spawn(UpdateTile {
-                        from_entity: player_entity,
-                        position: mouse_poistion_minus_tile,
-                        tiletype: TilesType::Floor,
-                    });
+                let mouse_position_from_window = match window_query.single().cursor_position() {
+                    Some(mouse_pos) => {
+                        last_mouse.pos = mouse_pos;
+                        mouse_pos
+                    }
+                    None => last_mouse.pos,
+                };
+
+                let win_size_gap = Vec2::new(win_size.w, win_size.h);
+                let mouse_position = get_mouse_pos_from_origin(
+                    mouse_position_from_window * game_state.zoom,
+                    win_size_gap * game_state.zoom,
+                    camera_tf.translation,
+                );
+                let mouse_position_minus_tile =
+                    mouse_position + Vec2::new(TILE_SIZE.0 as f32 / 2., TILE_SIZE.1 as f32 / 2.);
+
+                let tile_xy_to_modify = world_position_to_tile_xy(mouse_position_minus_tile);
+                for i in -1..=1 {
+                    for j in -1..=1 {
+                        let position_to_modify_tile = IVec2::new(
+                            (tile_xy_to_modify.x + i) * TILE_SIZE.0,
+                            (tile_xy_to_modify.y + j) * TILE_SIZE.1,
+                        )
+                        .as_vec2();
+                        //info!("position_to_modify_tile: {:?}", position_to_modify_tile);
+                        if !map.can_enter_tile(&position_to_modify_tile) {
+                            //info!(
+                            //    "Entt:{:?}, Spawning. UpdateTile: pos: {:?}, asking to Wall",
+                            //    player_entity, mouse_position
+                            //);
+                            commands.spawn(UpdateTile {
+                                from_entity: player_entity,
+                                position: position_to_modify_tile,
+                                tiletype: TilesType::Floor,
+                            });
+                        }
+                    }
                 }
             }
         }

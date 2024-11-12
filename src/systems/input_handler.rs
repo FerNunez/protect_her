@@ -10,6 +10,7 @@ pub fn user_mouse_handler_zoom_event_system(
         let result = scroll_evr.read_with_id();
         for ev in result.into_iter(){
                 game_state.zoom += ev.0.y / 10.;
+            println!("game_state.zoom = {}", game_state.zoom );
         }
 
     }

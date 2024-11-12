@@ -13,6 +13,8 @@ pub struct WinSize {
 pub struct GameState {
     pub zoom: f32,
     pub coins: u64,
+    pub egg_spawn_position: IVec2,
+    pub player_spawn_position: IVec2,
 }
 
 #[derive(Resource)]

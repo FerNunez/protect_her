@@ -78,6 +78,9 @@ pub fn setup_system(
 
     let game_state = GameState {
         //zoom: 0.65,
+        egg_spawn_position: IVec2::new(50, MAP_SIZE_IN_TILES.1 - 50) * TILE_SIZE.0,
+        player_spawn_position: IVec2::new(50, MAP_SIZE_IN_TILES.1 - 50) * TILE_SIZE.1,
+        //zoom: 0.6,
         zoom: 1.,
         coins: 0,
     };
